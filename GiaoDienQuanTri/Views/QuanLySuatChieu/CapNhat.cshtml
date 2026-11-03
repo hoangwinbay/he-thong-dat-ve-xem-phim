@@ -1,0 +1,75 @@
+@model GiaoDienQuanTri.Models.SuatChieu
+@{
+    ViewData["Title"] = "Cập nhật suất chiếu";
+    var phims = ViewBag.Phims as List<GiaoDienQuanTri.Models.Phim> ?? new();
+    var phongs = ViewBag.Phongs as List<GiaoDienQuanTri.Models.PhongChieu> ?? new();
+}
+
+<div class="card col-lg-8 mx-auto">
+    <div class="card-header bg-warning text-dark py-3 fw-bold">
+        <i class="bi bi-pencil-square me-2"></i> Cập Nhật Suất Chiếu #@Model.MaSuatChieu
+    </div>
+    <div class="card-body p-4">
+        <form asp-action="CapNhat" method="post">
+            <input type="hidden" asp-for="MaSuatChieu" />
+
+            <div class="mb-3">
+                <label asp-for="MaPhim" class="form-label fw-bold">Chọn Bộ Phim *</label>
+                <select asp-for="MaPhim" class="form-select" required>
+                    @foreach (var p in phims)
+                    {
+                        <option value="@p.MaPhim" selected="@(Model.MaPhim == p.MaPhim)">@p.TenPhim (@p.ThoiLuong phút)</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="MaPhong" class="form-label fw-bold">Chọn Phòng Chiếu *</label>
+                <select asp-for="MaPhong" class="form-select" required>
+                    @foreach (var p in phongs)
+                    {
+                        <option value="@p.MaPhong" selected="@(Model.MaPhong == p.MaPhong)">@p.RapChieu?.TenRap - @p.TenPhong</option>
+                    }
+                </select>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label asp-for="NgayChieu" class="form-label fw-bold">Ngày Chiếu *</label>
+                    <input asp-for="NgayChieu" type="date" class="form-control" value="@Model.NgayChieu.ToString("yyyy-MM-dd")" required />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="GioBatDau" class="form-label fw-bold">Giờ Bắt Đầu *</label>
+                    <input asp-for="GioBatDau" type="time" class="form-control" required />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="GioKetThuc" class="form-label fw-bold">Giờ Kết Thúc *</label>
+                    <input asp-for="GioKetThuc" type="time" class="form-control" required />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="GiaVe" class="form-label fw-bold">Giá Vé Cơ Bản (VNĐ) *</label>
+                    <input asp-for="GiaVe" type="number" class="form-control" required />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="TrangThai" class="form-label fw-bold">Trạng Thái</label>
+                    <select asp-for="TrangThai" class="form-select">
+                        <option value="DangMoBan">Đang mở bán</option>
+                        <option value="HetVe">Hết vé</option>
+                        <option value="SapChieu">Sắp chiếu</option>
+                        <option value="DaChieu">Đã chiếu</option>
+                        <option value="Huy">Hủy suất chiếu</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-action="Index" class="btn btn-secondary">Hủy bỏ</a>
+                <button type="submit" class="btn btn-warning"><i class="bi bi-check2-circle me-1"></i> Lưu thay đổi</button>
+            </div>
+        </form>
+    </div>
+</div>
+

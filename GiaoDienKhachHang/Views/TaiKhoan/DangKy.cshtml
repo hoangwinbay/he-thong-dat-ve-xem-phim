@@ -1,0 +1,71 @@
+@{
+    ViewData["Title"] = "Đăng ký thành viên";
+    string? error = ViewBag.Error as string;
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card bg-card border-secondary rounded-4 p-4 shadow-lg">
+                <div class="text-center mb-4">
+                    <i class="bi bi-person-plus-fill text-warning fs-1"></i>
+                    <h3 class="text-white fw-bold mt-2">Đăng Ký Thành Viên</h3>
+                    <p class="text-muted small">Tham gia ngay để tận hưởng trải nghiệm xem phim đỉnh cao</p>
+                </div>
+
+                @if (!string.IsNullOrEmpty(error))
+                {
+                    <div class="alert alert-danger py-2 small border-0">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>@error
+                    </div>
+                }
+
+                <form asp-action="DangKy" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label class="form-label text-light small">Họ và tên</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-person"></i></span>
+                            <input type="text" name="hoTen" class="form-control bg-dark border-secondary text-light" placeholder="Nguyễn Văn A" required />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-light small">Địa chỉ Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-envelope"></i></span>
+                            <input type="email" name="email" class="form-control bg-dark border-secondary text-light" placeholder="nguyenvana@gmail.com" required />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-light small">Số điện thoại</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-phone"></i></span>
+                            <input type="tel" name="soDienThoai" class="form-control bg-dark border-secondary text-light" placeholder="0912345678" />
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label text-light small">Mật khẩu</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-lock"></i></span>
+                            <input type="password" name="matKhau" class="form-control bg-dark border-secondary text-light" placeholder="Tối thiểu 6 ký tự..." required />
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-warning text-dark w-100 py-2 fw-bold mb-3">
+                        <i class="bi bi-check-circle-fill me-2"></i>Đăng Ký Tài Khoản
+                    </button>
+
+                    <div class="text-center text-muted small">
+                        Đã có tài khoản?
+                        <a asp-action="DangNhap" class="text-danger fw-bold text-decoration-none">Đăng nhập</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+

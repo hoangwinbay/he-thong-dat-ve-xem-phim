@@ -1,0 +1,126 @@
+@model IEnumerable<GiaoDienQuanTri.Models.SuatChieu>
+@{
+    ViewData["Title"] = "Quản lý suất chiếu";
+    var phims = ViewBag.Phims as List<GiaoDienQuanTri.Models.Phim> ?? new();
+    var phongs = ViewBag.Phongs as List<GiaoDienQuanTri.Models.PhongChieu> ?? new();
+    int? selPhim = ViewBag.SelectedPhim as int?;
+    int? selPhong = ViewBag.SelectedPhong as int?;
+    string? selNgay = ViewBag.SelectedNgay as string;
+    string? selTrangThai = ViewBag.SelectedTrangThai as string;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0 text-dark"><i class="bi bi-calendar-event text-warning me-2"></i> Quản Lý Suất Chiếu Phim (Dịch Vụ 4)</h3>
+    <a asp-action="Them" class="btn btn-warning"><i class="bi bi-plus-circle me-1"></i> Tạo suất chiếu mới</a>
+</div>
+
+<!-- Lọc lịch chiếu -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-3">
+                <select name="maPhim" class="form-select">
+                    <option value="">-- Tất cả phim --</option>
+                    @foreach (var p in phims)
+                    {
+                        <option value="@p.MaPhim" selected="@(selPhim == p.MaPhim)">@p.TenPhim</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="maPhong" class="form-select">
+                    <option value="">-- Tất cả phòng chiếu --</option>
+                    @foreach (var p in phongs)
+                    {
+                        <option value="@p.MaPhong" selected="@(selPhong == p.MaPhong)">@p.RapChieu?.TenRap - @p.TenPhong</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="ngayChieu" value="@selNgay" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <div class="d-flex gap-2">
+                    <select name="trangThai" class="form-select">
+                        <option value="">-- Trạng thái --</option>
+                        <option value="DangMoBan" selected="@(selTrangThai == "DangMoBan")">Đang mở bán</option>
+                        <option value="HetVe" selected="@(selTrangThai == "HetVe")">Hết vé</option>
+                        <option value="SapChieu" selected="@(selTrangThai == "SapChieu")">Sắp chiếu</option>
+                        <option value="DaChieu" selected="@(selTrangThai == "DaChieu")">Đã chiếu</option>
+                    </select>
+                    <button type="submit" class="btn btn-dark"><i class="bi bi-search"></i> Lọc</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 70px;">#</th>
+                        <th>Phim</th>
+                        <th>Cụm Rạp & Phòng</th>
+                        <th>Ngày Chiếu</th>
+                        <th>Khung Giờ</th>
+                        <th>Giá Vé</th>
+                        <th>Trạng Thái</th>
+                        <th class="text-center">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model)
+                    {
+                        <tr>
+                            <td>@s.MaSuatChieu</td>
+                            <td>
+                                <strong>@s.Phim?.TenPhim</strong>
+                                <span class="badge bg-danger ms-1">@s.Phim?.DoTuoi</span>
+                            </td>
+                            <td>
+                                <div>@s.PhongChieu?.RapChieu?.TenRap</div>
+                                <span class="badge bg-secondary">@s.PhongChieu?.TenPhong (@s.PhongChieu?.LoaiPhong)</span>
+                            </td>
+                            <td><i class="bi bi-calendar3"></i> @s.NgayChieu.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <span class="badge bg-dark fs-6">
+                                    <i class="bi bi-clock"></i> @s.GioBatDau.ToString(@"hh\:mm") - @s.GioKetThuc.ToString(@"hh\:mm")
+                                </span>
+                            </td>
+                            <td class="text-danger fw-bold">@s.GiaVe.ToString("N0") đ</td>
+                            <td>
+                                @if (s.TrangThai == "DangMoBan")
+                                {
+                                    <span class="badge bg-success">Đang mở bán</span>
+                                }
+                                else if (s.TrangThai == "HetVe")
+                                {
+                                    <span class="badge bg-danger">Hết vé</span>
+                                }
+                                else if (s.TrangThai == "SapChieu")
+                                {
+                                    <span class="badge bg-warning text-dark">Sắp chiếu</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Đã chiếu / Hủy</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <a asp-action="ChiTiet" asp-route-id="@s.MaSuatChieu" class="btn btn-sm btn-info text-white me-1" title="Chi tiết ghế"><i class="bi bi-grid-3x3"></i></a>
+                                <a asp-action="CapNhat" asp-route-id="@s.MaSuatChieu" class="btn btn-sm btn-warning me-1" title="Sửa"><i class="bi bi-pencil-square"></i></a>
+                                <form asp-action="Xoa" asp-route-id="@s.MaSuatChieu" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa suất chiếu này?');">
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

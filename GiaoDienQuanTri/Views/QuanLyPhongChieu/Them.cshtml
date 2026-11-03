@@ -1,0 +1,54 @@
+@model GiaoDienQuanTri.Models.PhongChieu
+@{
+    ViewData["Title"] = "Thêm phòng chiếu";
+    var raps = ViewBag.Raps as List<GiaoDienQuanTri.Models.RapChieu> ?? new();
+}
+
+<div class="card col-lg-7 mx-auto">
+    <div class="card-header bg-primary text-white py-3 fw-bold">
+        <i class="bi bi-door-open-fill me-2"></i> Thêm Phòng Chiếu Mới
+    </div>
+    <div class="card-body p-4">
+        <form asp-action="Them" method="post">
+            <div class="mb-3">
+                <label asp-for="MaRap" class="form-label fw-bold">Thuộc Cụm Rạp *</label>
+                <select asp-for="MaRap" class="form-select" required>
+                    <option value="">-- Chọn rạp chiếu --</option>
+                    @foreach (var r in raps)
+                    {
+                        <option value="@r.MaRap">@r.TenRap</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="TenPhong" class="form-label fw-bold">Tên Phòng Chiếu *</label>
+                <input asp-for="TenPhong" class="form-control" placeholder="Ví dụ: Phòng 01, Cinema 1, IMAX Laser..." required />
+                <span asp-validation-for="TenPhong" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="LoaiPhong" class="form-label fw-bold">Công Nghệ / Định Dạng Chiếu</label>
+                <select asp-for="LoaiPhong" class="form-select">
+                    <option value="2D">2D Tiêu Chuẩn</option>
+                    <option value="3D">3D Dolby Atmos</option>
+                    <option value="IMAX">IMAX Laser</option>
+                    <option value="4DX">4DX Trải Nghiệm</option>
+                    <option value="ScreenX">ScreenX 270 Độ</option>
+                    <option value="VIP">Gold Class / First Class VIP</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="SoLuongGhe" class="form-label fw-bold">Sức Chứa Dự Kiến (Số Ghế)</label>
+                <input asp-for="SoLuongGhe" type="number" class="form-control" placeholder="120" />
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i> Lưu Phòng Chiếu</button>
+            </div>
+        </form>
+    </div>
+</div>
+

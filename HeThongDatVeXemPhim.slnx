@@ -1,0 +1,10 @@
+<Solution>
+  <Project Path="CongKetNoiAPI/CongKetNoiAPI.csproj" />
+  <Project Path="DichVuQuanLyGhe/DichVuQuanLyGhe.csproj" />
+  <Project Path="DichVuQuanLyNguoiDung/DichVuQuanLyNguoiDung.csproj" />
+  <Project Path="DichVuQuanLyPhim/DichVuQuanLyPhim.csproj" />
+  <Project Path="DichVuQuanLyRap/DichVuQuanLyRap.csproj" />
+  <Project Path="DichVuQuanLySuatChieu/DichVuQuanLySuatChieu.csproj" />
+  <Project Path="GiaoDienKhachHang/GiaoDienKhachHang.csproj" />
+  <Project Path="GiaoDienQuanTri/GiaoDienQuanTri.csproj" />
+</Solution>

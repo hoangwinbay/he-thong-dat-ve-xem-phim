@@ -1,0 +1,81 @@
+@model GiaoDienQuanTri.Models.SuatChieu
+@{
+    ViewData["Title"] = "Tạo suất chiếu mới";
+    var phims = ViewBag.Phims as List<GiaoDienQuanTri.Models.Phim> ?? new();
+    var phongs = ViewBag.Phongs as List<GiaoDienQuanTri.Models.PhongChieu> ?? new();
+}
+
+<div class="card col-lg-8 mx-auto">
+    <div class="card-header bg-warning text-dark py-3 fw-bold">
+        <i class="bi bi-calendar-plus me-2"></i> Tạo Lịch Chiếu Mới Cho Phim
+    </div>
+    <div class="card-body p-4">
+        <form asp-action="Them" method="post">
+            <div class="mb-3">
+                <label asp-for="MaPhim" class="form-label fw-bold">Chọn Bộ Phim *</label>
+                <select asp-for="MaPhim" class="form-select" required>
+                    <option value="">-- Chọn phim chiếu --</option>
+                    @foreach (var p in phims)
+                    {
+                        <option value="@p.MaPhim">@p.TenPhim (@p.ThoiLuong phút | @p.DoTuoi)</option>
+                    }
+                </select>
+                <span asp-validation-for="MaPhim" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="MaPhong" class="form-label fw-bold">Chọn Phòng Chiếu *</label>
+                <select asp-for="MaPhong" class="form-select" required>
+                    <option value="">-- Chọn rạp và phòng chiếu --</option>
+                    @foreach (var p in phongs)
+                    {
+                        <option value="@p.MaPhong">@p.RapChieu?.TenRap - @p.TenPhong (@p.LoaiPhong)</option>
+                    }
+                </select>
+                <span asp-validation-for="MaPhong" class="text-danger small"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label asp-for="NgayChieu" class="form-label fw-bold">Ngày Chiếu *</label>
+                    <input asp-for="NgayChieu" type="date" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="GioBatDau" class="form-label fw-bold">Giờ Bắt Đầu *</label>
+                    <input asp-for="GioBatDau" type="time" class="form-control" required />
+                    <span asp-validation-for="GioBatDau" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="GioKetThuc" class="form-label fw-bold">Giờ Kết Thúc *</label>
+                    <input asp-for="GioKetThuc" type="time" class="form-control" required />
+                    <span asp-validation-for="GioKetThuc" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="GiaVe" class="form-label fw-bold">Giá Vé Cơ Bản (VNĐ) *</label>
+                    <input asp-for="GiaVe" type="number" class="form-control" placeholder="90000" required />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="TrangThai" class="form-label fw-bold">Trạng Thái Mở Bán</label>
+                    <select asp-for="TrangThai" class="form-select">
+                        <option value="DangMoBan" selected>Đang mở bán</option>
+                        <option value="SapChieu">Sắp chiếu</option>
+                        <option value="HetVe">Hết vé</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="alert alert-info py-2 small">
+                <i class="bi bi-info-circle-fill me-1"></i> Hệ thống sẽ tự động khởi tạo danh sách ghế của phòng chiếu cho suất chiếu này với trạng thái <strong>Trống</strong>.
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                <button type="submit" class="btn btn-warning"><i class="bi bi-save me-1"></i> Lưu và Tạo Suất Chiếu</button>
+            </div>
+        </form>
+    </div>
+</div>
+

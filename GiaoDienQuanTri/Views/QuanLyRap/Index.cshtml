@@ -1,0 +1,63 @@
+@model IEnumerable<GiaoDienQuanTri.Models.RapChieu>
+@{
+    ViewData["Title"] = "Quản lý rạp chiếu phim";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0 text-dark"><i class="bi bi-building text-info me-2"></i> Quản Lý Cụm Rạp Chiếu Phim (Dịch Vụ 3)</h3>
+    <a asp-action="Them" class="btn btn-info text-white"><i class="bi bi-plus-circle me-1"></i> Thêm rạp mới</a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 70px;">#</th>
+                        <th>Tên Cụm Rạp</th>
+                        <th>Địa Chỉ</th>
+                        <th>Hotline</th>
+                        <th>Phòng Chiếu</th>
+                        <th>Trạng Thái</th>
+                        <th class="text-center">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model)
+                    {
+                        <tr>
+                            <td>@r.MaRap</td>
+                            <td><strong class="text-primary">@r.TenRap</strong></td>
+                            <td class="small">@(r.DiaChi ?? "Chưa có địa chỉ")</td>
+                            <td><code>@(r.SoDienThoai ?? "N/A")</code></td>
+                            <td>
+                                <a asp-controller="QuanLyPhongChieu" asp-action="Index" asp-route-maRap="@r.MaRap" class="badge bg-primary text-decoration-none p-2">
+                                    <i class="bi bi-door-open"></i> @r.PhongChieus.Count phòng chiếu
+                                </a>
+                            </td>
+                            <td>
+                                @if (r.TrangThai)
+                                {
+                                    <span class="badge bg-success">Mở cửa</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Tạm đóng</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <a asp-controller="QuanLyPhongChieu" asp-action="Them" asp-route-maRap="@r.MaRap" class="btn btn-sm btn-outline-success me-1" title="Thêm phòng chiếu"><i class="bi bi-plus-square"></i></a>
+                                <a asp-action="CapNhat" asp-route-id="@r.MaRap" class="btn btn-sm btn-warning me-1" title="Sửa"><i class="bi bi-pencil-square"></i></a>
+                                <form asp-action="Xoa" asp-route-id="@r.MaRap" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa rạp này?');">
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

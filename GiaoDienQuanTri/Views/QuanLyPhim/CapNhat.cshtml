@@ -1,0 +1,112 @@
+@model GiaoDienQuanTri.Models.Phim
+@{
+    ViewData["Title"] = "Cập nhật phim";
+    var theLoais = ViewBag.TheLoais as List<GiaoDienQuanTri.Models.TheLoai> ?? new();
+    var selectedIds = ViewBag.SelectedTheLoais as List<int> ?? new();
+}
+
+<div class="card col-lg-9 mx-auto">
+    <div class="card-header bg-warning text-dark py-3 fw-bold">
+        <i class="bi bi-pencil-square me-2"></i> Cập Nhật Phim: @Model.TenPhim
+    </div>
+    <div class="card-body p-4">
+        <form asp-action="CapNhat" method="post">
+            <input type="hidden" asp-for="MaPhim" />
+
+            <div class="row">
+                <div class="col-md-8 mb-3">
+                    <label asp-for="TenPhim" class="form-label fw-bold">Tên Phim *</label>
+                    <input asp-for="TenPhim" class="form-control" required />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="ThoiLuong" class="form-label fw-bold">Thời Lượng (Phút) *</label>
+                    <input asp-for="ThoiLuong" type="number" class="form-control" required />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="DaoDien" class="form-label fw-bold">Đạo Diễn</label>
+                    <input asp-for="DaoDien" class="form-control" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="QuocGia" class="form-label fw-bold">Quốc Gia</label>
+                    <input asp-for="QuocGia" class="form-control" />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="DienVien" class="form-label fw-bold">Diễn Viên</label>
+                <input asp-for="DienVien" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="MoTa" class="form-label fw-bold">Mô Tả / Tóm Tắt Phim</label>
+                <textarea asp-for="MoTa" class="form-control" rows="3"></textarea>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label asp-for="NgayKhoiChieu" class="form-label fw-bold">Ngày Khởi Chiếu</label>
+                    <input asp-for="NgayKhoiChieu" type="date" class="form-control" value="@(Model.NgayKhoiChieu?.ToString("yyyy-MM-dd"))" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="NgayKetThuc" class="form-label fw-bold">Ngày Kết Thúc</label>
+                    <input asp-for="NgayKetThuc" type="date" class="form-control" value="@(Model.NgayKetThuc?.ToString("yyyy-MM-dd"))" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label asp-for="DoTuoi" class="form-label fw-bold">Phân Loại Độ Tuổi</label>
+                    <select asp-for="DoTuoi" class="form-select">
+                        <option value="P">P - Phổ biến mọi lứa tuổi</option>
+                        <option value="K">K - Dưới 13 tuổi có người lớn đi kèm</option>
+                        <option value="T13">T13 - Khán giả từ 13 tuổi trở lên</option>
+                        <option value="T16">T16 - Khán giả từ 16 tuổi trở lên</option>
+                        <option value="T18">T18 - Khán giả từ 18 tuổi trở lên</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Poster" class="form-label fw-bold">Đường Dẫn Poster (Trong thư mục Ảnh/)</label>
+                    <input asp-for="Poster" class="form-control" />
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Trailer" class="form-label fw-bold">Đường Dẫn Trailer</label>
+                    <input asp-for="Trailer" class="form-control" />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="TrangThai" class="form-label fw-bold">Trạng Thái Chiếu *</label>
+                <select asp-for="TrangThai" class="form-select">
+                    <option value="DangChieu">Đang Chiếu (DangChieu)</option>
+                    <option value="SapChieu">Sắp Chiếu (SapChieu)</option>
+                    <option value="NgungChieu">Ngừng Chiếu (NgungChieu)</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">Chọn Thể Loại Phim</label>
+                <div class="row g-2 border rounded p-3 bg-light">
+                    @foreach (var tl in theLoais)
+                    {
+                        var isChecked = selectedIds.Contains(tl.MaTheLoai);
+                        <div class="col-md-3 col-sm-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="theLoaiIds" value="@tl.MaTheLoai" id="tl_@tl.MaTheLoai" checked="@isChecked" />
+                                <label class="form-check-label" for="tl_@tl.MaTheLoai">@tl.TenTheLoai</label>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+                <a asp-action="Index" class="btn btn-secondary">Hủy bỏ</a>
+                <button type="submit" class="btn btn-warning"><i class="bi bi-check2-circle me-1"></i> Lưu thay đổi</button>
+            </div>
+        </form>
+    </div>
+</div>
+

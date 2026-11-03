@@ -1,0 +1,45 @@
+@model IEnumerable<GiaoDienQuanTri.Models.TheLoai>
+@{
+    ViewData["Title"] = "Quản lý thể loại phim";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0 text-dark"><i class="bi bi-tags text-warning me-2"></i> Quản Lý Thể Loại Phim</h3>
+    <a asp-action="Them" class="btn btn-warning"><i class="bi bi-plus-circle me-1"></i> Thêm thể loại mới</a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 80px;">#</th>
+                        <th>Tên Thể Loại</th>
+                        <th>Số Lượng Phim Thuộc Thể Loại</th>
+                        <th class="text-center" style="width: 150px;">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var tl in Model)
+                    {
+                        <tr>
+                            <td>@tl.MaTheLoai</td>
+                            <td><strong class="text-primary">@tl.TenTheLoai</strong></td>
+                            <td>
+                                <span class="badge bg-info text-dark">@tl.PhimTheLoais.Count bộ phim</span>
+                            </td>
+                            <td class="text-center">
+                                <a asp-action="CapNhat" asp-route-id="@tl.MaTheLoai" class="btn btn-sm btn-warning me-1" title="Sửa"><i class="bi bi-pencil-square"></i></a>
+                                <form asp-action="Xoa" asp-route-id="@tl.MaTheLoai" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa thể loại này?');">
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Xóa"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+

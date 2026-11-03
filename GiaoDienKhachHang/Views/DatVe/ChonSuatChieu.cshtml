@@ -1,0 +1,138 @@
+@model IEnumerable<GiaoDienKhachHang.Models.SuatChieu>
+@{
+    ViewData["Title"] = "Lịch chiếu & Chọn suất chiếu";
+    var phims = ViewBag.Phims as List<GiaoDienKhachHang.Models.Phim> ?? new List<GiaoDienKhachHang.Models.Phim>();
+    var raps = ViewBag.Raps as List<GiaoDienKhachHang.Models.RapChieu> ?? new List<GiaoDienKhachHang.Models.RapChieu>();
+    int? selectedPhim = ViewBag.SelectedPhim as int?;
+    int? selectedRap = ViewBag.SelectedRap as int?;
+    DateTime selectedNgay = ViewBag.SelectedNgay is DateTime dt ? dt : DateTime.Today;
+
+    var groupedByPhim = Model.GroupBy(s => s.Phim).Where(g => g.Key != null);
+}
+
+<div class="container mt-4 mb-5">
+    <!-- Filter Card -->
+    <div class="card bg-card border-secondary p-3 mb-4 rounded-3">
+        <form method="get" asp-action="ChonSuatChieu" class="row g-3 align-items-center">
+            <div class="col-md-4">
+                <label class="form-label small text-muted mb-1">Chọn phim</label>
+                <select name="maPhim" class="form-select form-select-sm bg-dark text-light border-secondary" onchange="this.form.submit()">
+                    <option value="">-- Tất cả phim đang chiếu --</option>
+                    @foreach (var p in phims)
+                    {
+                        <option value="@p.MaPhim" selected="@(selectedPhim == p.MaPhim)">@p.TenPhim</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small text-muted mb-1">Chọn cụm rạp</label>
+                <select name="maRap" class="form-select form-select-sm bg-dark text-light border-secondary" onchange="this.form.submit()">
+                    <option value="">-- Tất cả cụm rạp --</option>
+                    @foreach (var r in raps)
+                    {
+                        <option value="@r.MaRap" selected="@(selectedRap == r.MaRap)">@r.TenRap</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small text-muted mb-1">Ngày chiếu</label>
+                <input type="date" name="ngayChieu" class="form-control form-control-sm bg-dark text-light border-secondary"
+                       value="@selectedNgay.ToString("yyyy-MM-dd")" onchange="this.form.submit()" />
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+                <a asp-action="ChonSuatChieu" class="btn btn-outline-secondary btn-sm w-100" title="Đặt lại bộ lọc">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Quick Date Tabs -->
+    <div class="d-flex gap-2 overflow-auto pb-3 mb-4">
+        @for (int i = 0; i < 7; i++)
+        {
+            var date = DateTime.Today.AddDays(i);
+            var isSelected = date.Date == selectedNgay.Date;
+            <a asp-action="ChonSuatChieu" asp-route-maPhim="@selectedPhim" asp-route-maRap="@selectedRap" asp-route-ngayChieu="@date.ToString("yyyy-MM-dd")"
+               class="btn @(isSelected ? "btn-danger fw-bold" : "btn-outline-secondary") text-nowrap px-3 py-2 text-center" style="min-width: 100px;">
+                <div class="small">@date.ToString("ddd", new System.Globalization.CultureInfo("vi-VN"))</div>
+                <div class="fs-6">@date.ToString("dd/MM")</div>
+            </a>
+        }
+    </div>
+
+    <!-- Danh sách suất chiếu theo phim -->
+    @if (!groupedByPhim.Any())
+    {
+        <div class="card bg-card border-secondary text-center py-5 rounded-4">
+            <i class="bi bi-calendar-x fs-1 text-muted mb-2"></i>
+            <h5 class="text-white">Không có suất chiếu phù hợp</h5>
+            <p class="text-muted small">Vui lòng chọn ngày khác hoặc thay đổi bộ lọc phim / rạp chiếu.</p>
+        </div>
+    }
+    else
+    {
+        @foreach (var phimGroup in groupedByPhim)
+        {
+            var phim = phimGroup.Key!;
+            <div class="card bg-card border-secondary rounded-4 p-4 mb-4">
+                <div class="row g-4 align-items-center">
+                    <div class="col-md-2 col-sm-3 text-center">
+                        <div class="rounded-3 overflow-hidden shadow-sm" style="max-width: 140px; margin: 0 auto;">
+                            @if (!string.IsNullOrEmpty(phim.Poster))
+                            {
+                                <img src="@phim.Poster" alt="@phim.TenPhim" class="w-100" />
+                            }
+                            else
+                            {
+                                <div class="bg-dark py-4 text-muted"><i class="bi bi-film fs-2"></i></div>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-10 col-sm-9">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            @if (!string.IsNullOrEmpty(phim.DoTuoi))
+                            {
+                                <span class="badge @(phim.DoTuoi.Contains("18") ? "bg-danger" : "bg-warning text-dark")">@phim.DoTuoi</span>
+                            }
+                            <h5 class="text-white fw-bold mb-0">@phim.TenPhim</h5>
+                        </div>
+                        <div class="small text-muted mb-3">
+                            <i class="bi bi-clock me-1"></i>@phim.ThoiLuong phút
+                            <span class="mx-2">•</span>
+                            <i class="bi bi-film me-1"></i>2D / Dolby Digital
+                        </div>
+
+                        @{
+                            var rapsInPhim = phimGroup.GroupBy(s => s.PhongChieu?.RapChieu).Where(r => r.Key != null);
+                        }
+
+                        @foreach (var rapGroup in rapsInPhim)
+                        {
+                            var rap = rapGroup.Key!;
+                            <div class="bg-dark p-3 rounded-3 mb-2 border border-secondary">
+                                <div class="fw-bold text-white small mb-2">
+                                    <i class="bi bi-geo-alt-fill text-danger me-1"></i>@rap.TenRap
+                                    <span class="text-muted fw-normal ms-2">(@rap.DiaChi)</span>
+                                </div>
+                                <div class="d-flex flex-wrap gap-2">
+                                    @foreach (var sc in rapGroup.OrderBy(s => s.GioBatDau))
+                                    {
+                                        <a asp-action="ChonGhe" asp-route-id="@sc.MaSuatChieu"
+                                           class="btn btn-outline-danger btn-sm text-center px-3 py-2 text-decoration-none">
+                                            <div class="fw-bold text-white fs-6">@sc.GioBatDau.ToString(@"hh\:mm")</div>
+                                            <div class="small text-muted" style="font-size:0.75rem;">
+                                                @sc.PhongChieu?.TenPhong • @sc.GiaVe.ToString("N0") đ
+                                            </div>
+                                        </a>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+

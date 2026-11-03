@@ -1,0 +1,168 @@
+@model GiaoDienKhachHang.Models.Phim
+@{
+    ViewData["Title"] = Model.TenPhim;
+    var suatChieus = ViewBag.SuatChieus as List<GiaoDienKhachHang.Models.SuatChieu> ?? new List<GiaoDienKhachHang.Models.SuatChieu>();
+    var groupedByDate = suatChieus.GroupBy(s => s.NgayChieu.Date).OrderBy(g => g.Key);
+}
+
+<div class="container mt-4 mb-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="TrangChu" asp-action="Index" class="text-secondary text-decoration-none">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Phim" asp-action="DanhSach" class="text-secondary text-decoration-none">Phim</a></li>
+            <li class="breadcrumb-item active text-white" aria-current="page">@Model.TenPhim</li>
+        </ol>
+    </nav>
+
+    <!-- Movie Overview Card -->
+    <div class="card bg-card border-secondary rounded-4 overflow-hidden mb-4 p-4">
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-5 text-center">
+                <div class="rounded-3 overflow-hidden shadow-lg border border-secondary mb-3 position-relative" style="max-width: 320px; margin: 0 auto;">
+                    @if (!string.IsNullOrEmpty(Model.Poster))
+                    {
+                        <img src="@Model.Poster" alt="@Model.TenPhim" class="w-100 d-block" />
+                    }
+                    else
+                    {
+                        <div class="py-5 bg-dark text-muted"><i class="bi bi-image fs-1"></i></div>
+                    }
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Trailer))
+                {
+                    <a href="@Model.Trailer" target="_blank" class="btn btn-outline-warning w-100" style="max-width: 320px;">
+                        <i class="bi bi-play-circle-fill me-2 fs-5"></i>Xem Trailer
+                    </a>
+                }
+            </div>
+
+            <div class="col-lg-8 col-md-7">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                    @if (!string.IsNullOrEmpty(Model.DoTuoi))
+                    {
+                        <span class="badge @(Model.DoTuoi.Contains("18") ? "bg-danger" : Model.DoTuoi.Contains("16") ? "bg-warning text-dark" : "bg-success") px-2 py-1 fs-6">
+                            @Model.DoTuoi
+                        </span>
+                    }
+                    <span class="badge @(Model.TrangThai == "DangChieu" ? "bg-success" : "bg-info text-dark") px-2 py-1 fs-6">
+                        @(Model.TrangThai == "DangChieu" ? "ĐANG CHIẾU" : "SẮP CHIẾU")
+                    </span>
+                    <span class="badge bg-secondary px-2 py-1 fs-6">
+                        <i class="bi bi-star-fill text-warning me-1"></i>4.8 / 5.0
+                    </span>
+                </div>
+
+                <h2 class="display-6 fw-bold text-white mb-3">@Model.TenPhim</h2>
+
+                <div class="row g-3 mb-4 small text-light">
+                    <div class="col-sm-6">
+                        <div class="text-muted">Thể loại:</div>
+                        <div class="fw-semibold">
+                            @if (Model.PhimTheLoais.Any())
+                            {
+                                @string.Join(", ", Model.PhimTheLoais.Select(t => t.TheLoai?.TenTheLoai).Where(t => t != null))
+                            }
+                            else
+                            {
+                                <span>Chưa phân loại</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-muted">Thời lượng:</div>
+                        <div class="fw-semibold"><i class="bi bi-clock me-1 text-danger"></i>@Model.ThoiLuong phút</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-muted">Đạo diễn:</div>
+                        <div class="fw-semibold">@(Model.DaoDien ?? "Đang cập nhật")</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-muted">Quốc gia:</div>
+                        <div class="fw-semibold">@(Model.QuocGia ?? "Đang cập nhật")</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-muted">Khởi chiếu:</div>
+                        <div class="fw-semibold">@(Model.NgayKhoiChieu?.ToString("dd/MM/yyyy") ?? "Chưa rõ")</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="text-muted">Diễn viên:</div>
+                        <div class="fw-semibold">@(Model.DienVien ?? "Đang cập nhật")</div>
+                    </div>
+                </div>
+
+                <h5 class="text-white fw-bold mb-2">Nội dung phim</h5>
+                <p class="text-light lead fs-6 lh-base mb-4" style="text-align: justify;">
+                    @(string.IsNullOrWhiteSpace(Model.MoTa) ? "Đang cập nhật nội dung cho bộ phim này..." : Model.MoTa)
+                </p>
+
+                @if (Model.TrangThai == "DangChieu")
+                {
+                    <a href="#lichChieuSection" class="btn btn-cinema btn-lg px-4">
+                        <i class="bi bi-ticket-perforated-fill me-2"></i>Xem Lịch Chiếu & Đặt Vé
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Showtimes Section -->
+    <div id="lichChieuSection" class="card bg-card border-secondary rounded-4 p-4">
+        <h4 class="text-white fw-bold mb-4 d-flex align-items-center gap-2">
+            <i class="bi bi-calendar3 text-danger"></i> LỊCH CHIẾU PHIM
+        </h4>
+
+        @if (!suatChieus.Any())
+        {
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-clock-history fs-2 d-block mb-2"></i>
+                Hiện tại chưa có suất chiếu đang mở bán cho bộ phim này. Vui lòng quay lại sau!
+            </div>
+        }
+        else
+        {
+            @foreach (var groupDate in groupedByDate)
+            {
+                <div class="mb-4">
+                    <h6 class="text-warning fw-bold border-bottom border-secondary pb-2 mb-3 d-flex align-items-center gap-2">
+                        <i class="bi bi-calendar-check"></i>
+                        Ngày: @groupDate.Key.ToString("dddd, dd/MM/yyyy", new System.Globalization.CultureInfo("vi-VN"))
+                    </h6>
+
+                    @{
+                        var rapsInDate = groupDate.GroupBy(s => s.PhongChieu?.RapChieu).Where(r => r.Key != null);
+                    }
+
+                    @foreach (var rapGroup in rapsInDate)
+                    {
+                        var rap = rapGroup.Key!;
+                        <div class="bg-dark p-3 rounded-3 mb-3 border border-secondary">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="text-white fw-bold mb-1">
+                                        <i class="bi bi-geo-alt-fill text-danger me-1"></i>@rap.TenRap
+                                    </h6>
+                                    <small class="text-muted">@rap.DiaChi</small>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 mt-3">
+                                @foreach (var sc in rapGroup.OrderBy(s => s.GioBatDau))
+                                {
+                                    <a asp-controller="DatVe" asp-action="ChonGhe" asp-route-id="@sc.MaSuatChieu"
+                                       class="btn btn-outline-danger btn-sm px-3 py-2 text-start text-decoration-none">
+                                        <div class="fw-bold fs-6 text-white">@sc.GioBatDau.ToString(@"hh\:mm")</div>
+                                        <div class="small text-muted" style="font-size:0.75rem;">
+                                            @sc.PhongChieu?.TenPhong - @sc.GiaVe.ToString("N0") đ
+                                        </div>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </div>
+</div>
+

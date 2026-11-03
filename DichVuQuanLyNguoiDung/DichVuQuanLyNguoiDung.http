@@ -1,0 +1,6 @@
+@DichVuQuanLyNguoiDung_HostAddress = http://localhost:5244
+
+GET {{DichVuQuanLyNguoiDung_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

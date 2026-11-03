@@ -1,0 +1,68 @@
+@model GiaoDienQuanTri.Models.NguoiDung
+@{
+    ViewData["Title"] = "Chi tiết người dùng";
+}
+
+<div class="card col-lg-8 mx-auto">
+    <div class="card-header bg-info text-white py-3 fw-bold">
+        <i class="bi bi-info-circle-fill me-2"></i> Hồ Sơ Người Dùng: @Model.HoTen
+    </div>
+    <div class="card-body p-4">
+        <div class="row mb-3">
+            <div class="col-sm-4 text-muted">Mã Người Dùng:</div>
+            <div class="col-sm-8 fw-bold">#@Model.MaNguoiDung</div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-sm-4 text-muted">Họ và Tên:</div>
+            <div class="col-sm-8 fw-bold">@Model.HoTen</div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-sm-4 text-muted">Email:</div>
+            <div class="col-sm-8">@Model.Email</div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-sm-4 text-muted">Số Điện Thoại:</div>
+            <div class="col-sm-8">@(Model.SoDienThoai ?? "Chưa có thông tin")</div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-sm-4 text-muted">Vai Trò:</div>
+            <div class="col-sm-8">
+                @if (Model.VaiTro == "QuanTri")
+                {
+                    <span class="badge bg-danger">Quản Trị Viên</span>
+                }
+                else if (Model.VaiTro == "NhanVien")
+                {
+                    <span class="badge bg-primary">Nhân Viên</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">Khách Hàng</span>
+                }
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-sm-4 text-muted">Trạng Thái:</div>
+            <div class="col-sm-8">
+                @if (Model.TrangThai)
+                {
+                    <span class="badge bg-success">Đang hoạt động</span>
+                }
+                else
+                {
+                    <span class="badge bg-danger">Tài khoản bị khóa</span>
+                }
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-sm-4 text-muted">Ngày Tạo Tài Khoản:</div>
+            <div class="col-sm-8">@Model.NgayTao.ToString("dd/MM/yyyy HH:mm:ss")</div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+            <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
+            <a asp-action="CapNhat" asp-route-id="@Model.MaNguoiDung" class="btn btn-warning"><i class="bi bi-pencil-square me-1"></i> Chỉnh sửa</a>
+        </div>
+    </div>
+</div>
+

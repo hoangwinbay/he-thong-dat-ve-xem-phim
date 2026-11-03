@@ -1,0 +1,196 @@
+@model GiaoDienKhachHang.Models.SuatChieu
+@{
+    ViewData["Title"] = "Chọn ghế - " + (Model.Phim?.TenPhim ?? "Đặt vé");
+    var gheSuatChieus = Model.GheSuatChieus.OrderBy(g => g.GheNgoi?.HangGhe).ThenBy(g => g.GheNgoi?.SoGhe).ToList();
+    var hangGhes = gheSuatChieus.Select(g => g.GheNgoi?.HangGhe).Where(h => h != null).Distinct().OrderBy(h => h).ToList();
+}
+
+<div class="container mt-4 mb-5">
+    <div class="row g-4">
+        <!-- Khu vực sơ đồ ghế -->
+        <div class="col-lg-8">
+            <div class="card bg-card border-secondary rounded-4 p-4 text-center">
+                <h4 class="text-white fw-bold mb-1">CHỌN GHẾ NGỒI</h4>
+                <div class="text-muted small mb-4">
+                    @Model.PhongChieu?.RapChieu?.TenRap - <strong>@Model.PhongChieu?.TenPhong</strong>
+                    (@Model.NgayChieu.ToString("dd/MM/yyyy") lúc @Model.GioBatDau.ToString(@"hh\:mm"))
+                </div>
+
+                <!-- Màn hình chiếu -->
+                <div class="mb-4">
+                    <div class="screen-curve">MÀN HÌNH CHIẾU</div>
+                </div>
+
+                <!-- Lưới ghế -->
+                <div class="table-responsive py-3" style="max-height: 520px; overflow-x: auto;">
+                    <div class="d-inline-block text-nowrap">
+                        @foreach (var hang in hangGhes)
+                        {
+                            var ghesInHang = gheSuatChieus.Where(g => g.GheNgoi?.HangGhe == hang).OrderBy(g => g.GheNgoi?.SoGhe).ToList();
+                            <div class="d-flex align-items-center justify-content-center mb-1">
+                                <span class="fw-bold text-muted me-3" style="width: 20px;">@hang</span>
+                                <div class="d-flex">
+                                    @foreach (var gsc in ghesInHang)
+                                    {
+                                        var ghe = gsc.GheNgoi!;
+                                        var isBooked = gsc.TrangThai == "DaDat";
+                                        var isHolding = gsc.TrangThai == "DangGiu";
+                                        var seatClass = "seat-item ";
+
+                                        if (isBooked)
+                                        {
+                                            seatClass += "seat-booked";
+                                        }
+                                        else if (isHolding)
+                                        {
+                                            seatClass += "seat-holding";
+                                        }
+                                        else
+                                        {
+                                            seatClass += (ghe.LoaiGhe == "VIP" ? "seat-vip" : ghe.LoaiGhe == "Doi" ? "seat-doi" : "seat-thuong");
+                                        }
+
+                                        <div class="@seatClass"
+                                             data-id="@gsc.MaGheSuatChieu"
+                                             data-code="@(hang + ghe.SoGhe)"
+                                             data-type="@ghe.LoaiGhe"
+                                             data-price="@gsc.GiaVe"
+                                             data-status="@gsc.TrangThai"
+                                             onclick="toggleSeat(this)"
+                                             title="@hang@ghe.SoGhe - Ghế @ghe.LoaiGhe - @gsc.GiaVe.ToString("N0") đ">
+                                            @hang@ghe.SoGhe
+                                        </div>
+                                    }
+                                </div>
+                                <span class="fw-bold text-muted ms-3" style="width: 20px;">@hang</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Chú thích loại ghế -->
+                <div class="border-top border-secondary pt-3 mt-4">
+                    <div class="d-flex flex-wrap justify-content-center gap-4 text-white small">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="seat-item seat-thuong" style="cursor: default;">00</span> Ghế thường
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="seat-item seat-vip" style="cursor: default;">00</span> Ghế VIP
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="seat-item seat-doi" style="cursor: default;">00</span> Ghế đôi (Sweetbox)
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="seat-item seat-selected" style="cursor: default;">00</span> Ghế đang chọn
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="seat-item seat-booked" style="cursor: default;">X</span> Đã bán
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Thông tin đặt vé & Tổng tiền -->
+        <div class="col-lg-4">
+            <div class="card bg-card border-secondary rounded-4 p-4 sticky-top" style="top: 80px;">
+                <div class="d-flex gap-3 mb-3 border-bottom border-secondary pb-3">
+                    @if (!string.IsNullOrEmpty(Model.Phim?.Poster))
+                    {
+                        <img src="@Model.Phim.Poster" alt="@Model.Phim.TenPhim" class="rounded-2" style="width: 75px; height: 110px; object-fit: cover;" />
+                    }
+                    <div>
+                        <h5 class="text-white fw-bold mb-1">@Model.Phim?.TenPhim</h5>
+                        <div class="badge bg-danger mb-1">@Model.Phim?.DoTuoi</div>
+                        <div class="small text-muted">@Model.Phim?.ThoiLuong phút • 2D Phụ đề</div>
+                    </div>
+                </div>
+
+                <div class="small text-light d-flex flex-column gap-2 mb-3 border-bottom border-secondary pb-3">
+                    <div><span class="text-muted">Rạp:</span> <strong>@Model.PhongChieu?.RapChieu?.TenRap</strong></div>
+                    <div><span class="text-muted">Phòng chiếu:</span> <strong>@Model.PhongChieu?.TenPhong</strong></div>
+                    <div><span class="text-muted">Suất chiếu:</span> <strong class="text-warning">@Model.GioBatDau.ToString(@"hh\:mm")</strong> - Ngày @Model.NgayChieu.ToString("dd/MM/yyyy")</div>
+                    <div><span class="text-muted">Ghế đã chọn:</span> <span id="lblGheChon" class="fw-bold text-success">Chưa chọn ghế</span></div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <span class="text-white fw-bold">Tổng thanh toán:</span>
+                    <span id="lblTongTien" class="fs-4 fw-bold text-danger">0 đ</span>
+                </div>
+
+                <button id="btnXacNhan" class="btn btn-cinema btn-lg w-100 py-3 fw-bold disabled" onclick="submitBooking()">
+                    <i class="bi bi-credit-card me-2"></i>Tiếp tục đặt vé
+                </button>
+
+                <div class="alert alert-dark border border-secondary text-muted small mt-3 mb-0 text-center">
+                    <i class="bi bi-shield-check text-success me-1"></i>Hệ thống tự động giữ chỗ trong 5 phút sau khi bạn bấm xác nhận.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const selectedSeats = new Map();
+
+        function toggleSeat(element) {
+            const status = element.getAttribute('data-status');
+            if (status === 'DaDat' || status === 'DangGiu') {
+                return;
+            }
+
+            const seatId = element.getAttribute('data-id');
+            const seatCode = element.getAttribute('data-code');
+            const price = parseFloat(element.getAttribute('data-price')) || 0;
+
+            if (selectedSeats.has(seatId)) {
+                selectedSeats.delete(seatId);
+                element.classList.remove('seat-selected');
+            } else {
+                if (selectedSeats.size >= 8) {
+                    alert('Bạn chỉ có thể chọn tối đa 8 ghế trong một lần đặt!');
+                    return;
+                }
+                selectedSeats.set(seatId, { code: seatCode, price: price });
+                element.classList.add('seat-selected');
+            }
+
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const lblGheChon = document.getElementById('lblGheChon');
+            const lblTongTien = document.getElementById('lblTongTien');
+            const btnXacNhan = document.getElementById('btnXacNhan');
+
+            if (selectedSeats.size === 0) {
+                lblGheChon.textContent = 'Chưa chọn ghế';
+                lblGheChon.className = 'fw-bold text-muted';
+                lblTongTien.textContent = '0 đ';
+                btnXacNhan.classList.add('disabled');
+            } else {
+                const codes = [];
+                let total = 0;
+                for (let [id, seat] of selectedSeats) {
+                    codes.push(seat.code);
+                    total += seat.price;
+                }
+
+                lblGheChon.textContent = codes.join(', ');
+                lblGheChon.className = 'fw-bold text-success';
+                lblTongTien.textContent = total.toLocaleString('vi-VN') + ' đ';
+                btnXacNhan.classList.remove('disabled');
+            }
+        }
+
+        function submitBooking() {
+            if (selectedSeats.size === 0) return;
+            const codes = Array.from(selectedSeats.values()).map(s => s.code).join(', ');
+            const total = document.getElementById('lblTongTien').textContent;
+            
+            alert(`🎉 Bạn đã chọn thành công các ghế: ${codes}\nTổng tiền: ${total}\n\nThông tin đã được chuyển tiếp tới Dịch vụ Đặt vé (DichVuDatVe) & Dịch vụ Thanh toán (DichVuThanhToan) để hoàn tất quy trình!`);
+        }
+    </script>
+}
+
