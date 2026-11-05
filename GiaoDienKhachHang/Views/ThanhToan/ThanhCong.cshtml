@@ -1,0 +1,90 @@
+@model GiaoDienKhachHang.Models.ThanhToan
+@{
+    ViewData["Title"] = "Thanh toán thành công!";
+    var dv = Model.DatVe;
+    var suat = dv?.SuatChieu;
+    var phim = suat?.Phim;
+    var phong = suat?.PhongChieu;
+    var rap = phong?.RapChieu;
+    var ghes = dv?.ChiTietDatVes.Select(ct => ct.GheSuatChieu?.GheNgoi).Where(g => g != null).ToList() ?? new();
+}
+
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card bg-card border-secondary rounded-4 p-4 p-md-5 text-center shadow-lg position-relative overflow-hidden">
+                <!-- Glowing accent -->
+                <div style="position: absolute; top: -50px; left: 50%; transform: translateX(-50%); width: 250px; height: 100px; background: radial-gradient(circle, rgba(25,135,84,0.4) 0%, transparent 70%);"></div>
+
+                <div class="mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-success text-white shadow" style="width: 80px; height: 80px;">
+                        <i class="bi bi-check-lg display-4"></i>
+                    </div>
+                </div>
+
+                <h3 class="text-white fw-bold mb-1">THANH TOÁN THÀNH CÔNG!</h3>
+                <p class="text-muted small mb-4">Giao dịch của bạn đã được ghi nhận vào hệ thống CINEBOOKING.</p>
+
+                <!-- Thẻ Hóa Đơn Chi Tiết -->
+                <div class="card bg-dark border-secondary rounded-3 text-start p-4 mb-4 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center pb-3 border-bottom border-secondary mb-3">
+                        <div>
+                            <span class="text-muted small d-block">Mã giao dịch:</span>
+                            <span class="text-warning fw-bold font-monospace">@Model.MaGiaoDich</span>
+                        </div>
+                        <div class="text-end">
+                            <span class="text-muted small d-block">Mã đơn đặt vé:</span>
+                            <span class="text-danger fw-bold fs-6">#@Model.MaDatVe</span>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-8">
+                            <h6 class="text-white fw-bold mb-1">@phim?.TenPhim</h6>
+                            <div class="small text-muted"><i class="bi bi-geo-alt-fill text-danger me-1"></i>@rap?.TenRap • @phong?.TenPhong</div>
+                            <div class="small text-light"><i class="bi bi-clock-fill text-info me-1"></i>@suat?.GioBatDau.ToString(@"hh\:mm") - Ngày @suat?.NgayChieu.ToString("dd/MM/yyyy")</div>
+                        </div>
+                        <div class="col-4 text-end">
+                            <span class="badge bg-danger mb-1">@phim?.DoTuoi</span>
+                            <div class="small text-muted">@phim?.ThoiLuong phút</div>
+                        </div>
+                    </div>
+
+                    <div class="p-2 rounded bg-black bg-opacity-50 border border-secondary border-opacity-50 mb-3">
+                        <div class="d-flex justify-content-between text-muted small mb-1">
+                            <span>Vị trí ghế:</span>
+                            <span class="text-white fw-bold">
+                                @string.Join(", ", ghes.Select(g => $"{g!.HangGhe}{g.SoGhe}"))
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted small mb-1">
+                            <span>Phương thức thanh toán:</span>
+                            <span class="text-info fw-bold">@Model.PhuongThuc</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted small">
+                            <span>Thời gian thanh toán:</span>
+                            <span class="text-light">@Model.NgayThanhToan.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-2">
+                        <span class="text-white fw-bold fs-5">Số tiền đã thanh toán:</span>
+                        <span class="text-danger fs-3 fw-bold">@Model.SoTien.ToString("N0") đ</span>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+                    <a asp-controller="VeDienTu" asp-action="DonDatVe" asp-route-maDatVe="@Model.MaDatVe" class="btn btn-warning rounded-pill px-4 py-2 fw-bold text-dark shadow">
+                        <i class="bi bi-qr-code-scan me-1"></i> Xem Vé Điện Tử & Mã QR
+                    </a>
+                    <a asp-controller="LichSuDatVe" asp-action="Index" class="btn btn-cinema rounded-pill px-4 py-2 fw-bold">
+                        <i class="bi bi-ticket-detailed me-1"></i> Xem lịch sử đặt vé
+                    </a>
+                    <a asp-controller="TrangChu" asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4 py-2">
+                        <i class="bi bi-house me-1"></i> Về trang chủ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

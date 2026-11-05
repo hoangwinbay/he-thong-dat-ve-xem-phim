@@ -1,0 +1,93 @@
+@model GiaoDienQuanTri.Models.DanhGiaPhim
+@{
+    ViewData["Title"] = $"Chi tiết đánh giá #{Model.MaDanhGia}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill mb-2">
+            <i class="bi bi-arrow-left me-1"></i> Trở về danh sách đánh giá
+        </a>
+        <h3 class="fw-bold mb-0 text-dark">
+            Chi Tiết Đánh Giá Phim #@Model.MaDanhGia
+        </h3>
+    </div>
+    <div>
+        <form asp-action="Xoa" asp-route-id="@Model.MaDanhGia" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đánh giá này không?');">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-danger rounded-pill px-4">
+                <i class="bi bi-trash me-1"></i> Xóa đánh giá này
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+            <div class="d-flex justify-content-between align-items-center pb-3 border-bottom mb-4">
+                <div>
+                    <span class="badge bg-danger rounded-pill me-2">ĐÁNH GIÁ PHIM</span>
+                    <span class="badge bg-warning text-dark fs-6 px-3 py-1 rounded-pill fw-bold">
+                        @Model.SoSao / 5 ⭐
+                    </span>
+                </div>
+                <div class="text-muted small">
+                    <i class="bi bi-clock me-1"></i> Ngày gửi: @Model.NgayDanhGia.ToString("dd/MM/yyyy HH:mm:ss")
+                </div>
+            </div>
+
+            <!-- Phim Info -->
+            <div class="card bg-light border-0 rounded-3 p-3 mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    @if (!string.IsNullOrEmpty(Model.Phim?.Poster))
+                    {
+                        <img src="@Model.Phim.Poster" alt="@Model.Phim.TenPhim" class="rounded-2 shadow-sm" style="width: 60px; height: 85px; object-fit: cover;" />
+                    }
+                    <div>
+                        <span class="badge bg-secondary mb-1">@Model.Phim?.DoTuoi</span>
+                        <h5 class="fw-bold text-dark mb-1">@Model.Phim?.TenPhim</h5>
+                        <div class="small text-muted">Thời lượng: @Model.Phim?.ThoiLuong phút</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rating Stars and Comment -->
+            <div class="mb-4">
+                <h6 class="fw-bold text-muted small text-uppercase mb-2">Mức độ hài lòng của khán giả:</h6>
+                <div class="fs-4 text-warning mb-3">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        if (i <= Model.SoSao)
+                        {
+                            <i class="bi bi-star-fill"></i>
+                        }
+                        else
+                        {
+                            <i class="bi bi-star"></i>
+                        }
+                    }
+                    <span class="text-dark fs-5 fw-bold ms-2">(@Model.SoSao sao)</span>
+                </div>
+
+                <h6 class="fw-bold text-muted small text-uppercase mb-2">Nội dung nhận xét & bình luận:</h6>
+                <div class="p-4 bg-light rounded-3 text-dark fs-6 lh-lg" style="white-space: pre-line;">
+                    @(string.IsNullOrWhiteSpace(Model.BinhLuan) ? "(Khán giả không để lại lời bình luận)" : Model.BinhLuan)
+                </div>
+            </div>
+
+            <!-- Customer Info -->
+            <div class="card border bg-white rounded-3 p-3">
+                <h6 class="fw-bold text-muted small text-uppercase mb-2">Thông tin người đánh giá:</h6>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-bold text-dark fs-6">@(Model.NguoiDung?.HoTen ?? "Khách hàng")</div>
+                        <div class="text-muted small">Email: @(Model.NguoiDung?.Email ?? "N/A")</div>
+                        <div class="text-muted small">Điện thoại: @(Model.NguoiDung?.SoDienThoai ?? "N/A")</div>
+                    </div>
+                    <span class="badge bg-primary">Khách hàng</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

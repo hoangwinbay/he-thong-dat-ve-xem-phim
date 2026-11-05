@@ -1,0 +1,116 @@
+@model IEnumerable<GiaoDienKhachHang.Models.ThongBao>
+@{
+    ViewData["Title"] = "Trung tâm thông báo";
+    var loc = ViewBag.Loc as string ?? "tatca";
+    var countUnread = Model.Count(t => !t.DaDoc);
+}
+
+<div class="container mt-4 mb-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h3 class="text-white fw-bold mb-1 d-flex align-items-center gap-2">
+                <i class="bi bi-bell-fill text-warning"></i> THÔNG BÁO CỦA TÔI
+            </h3>
+            <p class="text-muted small mb-0">Cập nhật tin tức giao dịch, mã vé xem phim và ưu đãi dành riêng cho bạn</p>
+        </div>
+        @if (countUnread > 0)
+        {
+            <form asp-action="DanhDauTatCaDaDoc" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-warning btn-sm rounded-pill px-3">
+                    <i class="bi bi-check2-all me-1"></i> Đánh dấu tất cả đã đọc (@countUnread)
+                </button>
+            </form>
+        }
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show rounded-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Tra cứu email nếu chưa đăng nhập -->
+    <div class="card bg-card border-secondary rounded-4 p-3 mb-4 shadow-sm">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-9">
+                <div class="input-group">
+                    <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-envelope"></i></span>
+                    <input type="email" name="email" value="@ViewBag.Email" class="form-control bg-dark border-secondary text-white" placeholder="Nhập email tài khoản để tra cứu thông báo cá nhân..." />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-cinema w-100 rounded-pill fw-bold">
+                    <i class="bi bi-search me-1"></i> Tra cứu
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="d-flex gap-2 mb-4">
+        <a asp-action="Index" asp-route-loc="tatca" asp-route-email="@ViewBag.Email" class="btn btn-sm rounded-pill px-3 @(loc == "tatca" ? "btn-warning text-dark fw-bold" : "btn-outline-secondary")">
+            Tất cả (@Model.Count())
+        </a>
+        <a asp-action="Index" asp-route-loc="chuadoc" asp-route-email="@ViewBag.Email" class="btn btn-sm rounded-pill px-3 @(loc == "chuadoc" ? "btn-warning text-dark fw-bold" : "btn-outline-secondary")">
+            Chưa đọc (@countUnread)
+        </a>
+        <a asp-action="Index" asp-route-loc="dadoc" asp-route-email="@ViewBag.Email" class="btn btn-sm rounded-pill px-3 @(loc == "dadoc" ? "btn-warning text-dark fw-bold" : "btn-outline-secondary")">
+            Đã đọc (@(Model.Count() - countUnread))
+        </a>
+    </div>
+
+    <!-- Danh sách thông báo -->
+    @if (!Model.Any())
+    {
+        <div class="card bg-card border-secondary rounded-4 p-5 text-center shadow-sm">
+            <i class="bi bi-bell-slash display-3 text-muted mb-3"></i>
+            <h5 class="text-white fw-bold">Không có thông báo nào</h5>
+            <p class="text-muted small mb-0">Hộp thư thông báo của bạn hiện đang trống.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var item in Model)
+            {
+                <div class="col-12">
+                    <div class="card bg-card border-secondary rounded-4 p-3 shadow-sm position-relative @(!item.DaDoc ? "border-warning border-opacity-75" : "")" style="@(!item.DaDoc ? "background: linear-gradient(90deg, rgba(255, 193, 7, 0.05) 0%, rgba(22, 25, 34, 1) 100%);" : "")">
+                        <div class="d-flex align-items-start gap-3">
+                            <!-- Icon -->
+                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 @(!item.DaDoc ? "bg-warning text-dark" : "bg-dark text-muted border border-secondary")" style="width: 46px; height: 46px;">
+                                <i class="bi @(!item.DaDoc ? "bi-bell-fill" : "bi-bell") fs-5"></i>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                                    <h6 class="text-white fw-bold mb-1">
+                                        @item.TieuDe
+                                        @if (!item.DaDoc)
+                                        {
+                                            <span class="badge bg-danger ms-2" style="font-size: 0.65rem;">MỚI</span>
+                                        }
+                                    </h6>
+                                    <span class="text-muted small" style="font-size: 0.75rem;">
+                                        <i class="bi bi-clock me-1"></i>@item.NgayGui.ToString("dd/MM/yyyy HH:mm")
+                                    </span>
+                                </div>
+                                <p class="text-muted small mb-2 text-truncate" style="max-width: 800px;">
+                                    @item.NoiDung
+                                </p>
+                                <div class="d-flex align-items-center gap-3">
+                                    <a asp-action="ChiTiet" asp-route-id="@item.MaThongBao" class="text-warning small text-decoration-none fw-bold">
+                                        Xem chi tiết <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

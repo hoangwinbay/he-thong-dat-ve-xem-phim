@@ -1,0 +1,83 @@
+@{
+    ViewData["Title"] = "Soạn thông báo mới";
+    var nguoiDungs = ViewBag.NguoiDungs as List<GiaoDienQuanTri.Models.NguoiDung> ?? new();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill mb-2">
+            <i class="bi bi-arrow-left me-1"></i> Trở về danh sách thông báo
+        </a>
+        <h3 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-send-fill text-primary me-2"></i> Soạn & Gửi Thông Báo Khách Hàng
+        </h3>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+            <form asp-action="TaoMoi" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Đối tượng nhận thông báo:</label>
+                    <div class="p-3 bg-light rounded-3 border mb-3">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="guiTatCa" name="guiTatCa" value="true" onchange="toggleGuiTatCa(this)">
+                            <label class="form-check-label fw-bold text-danger" for="guiTatCa">
+                                <i class="bi bi-broadcast me-1"></i> Gửi đồng loạt (Phát sóng) cho TẤT CẢ khách hàng
+                            </label>
+                        </div>
+                        <div class="small text-muted ps-4">
+                            Nếu bật tùy chọn này, thông báo sẽ được chuyển đến hòm thư của tất cả người dùng trong hệ thống (khuyến mãi, thông báo bảo trì, phim bom tấn mới,...).
+                        </div>
+                    </div>
+
+                    <div id="chonNguoiDungBlock">
+                        <label class="form-label small fw-bold text-muted">Hoặc chọn một khách hàng cụ thể:</label>
+                        <select name="maNguoiDung" id="selectNguoiDung" class="form-select">
+                            <option value="">-- Chọn khách hàng nhận thông báo --</option>
+                            @foreach (var u in nguoiDungs)
+                            {
+                                <option value="@u.MaNguoiDung">@u.HoTen (@u.Email) - @u.VaiTro</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Tiêu đề thông báo: <span class="text-danger">*</span></label>
+                    <input type="text" name="tieuDe" class="form-control form-control-lg" placeholder="Ví dụ: Ưu đãi đặc biệt giảm 20% vé xem phim cuối tuần..." required maxlength="200" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Nội dung chi tiết: <span class="text-danger">*</span></label>
+                    <textarea name="noiDung" class="form-control" rows="6" placeholder="Nhập nội dung chi tiết thông báo gửi đến khách hàng..." required></textarea>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                    <a asp-action="Index" class="btn btn-outline-secondary px-4 rounded-pill">
+                        Hủy bỏ
+                    </a>
+                    <button type="submit" class="btn btn-primary px-5 rounded-pill fw-bold shadow-sm">
+                        <i class="bi bi-send-fill me-1"></i> Gửi thông báo ngay
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleGuiTatCa(checkbox) {
+        var block = document.getElementById('chonNguoiDungBlock');
+        var select = document.getElementById('selectNguoiDung');
+        if (checkbox.checked) {
+            block.style.display = 'none';
+            select.removeAttribute('required');
+        } else {
+            block.style.display = 'block';
+        }
+    }
+</script>

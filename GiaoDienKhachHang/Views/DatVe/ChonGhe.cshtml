@@ -186,11 +186,10 @@
 
         function submitBooking() {
             if (selectedSeats.size === 0) return;
-            const codes = Array.from(selectedSeats.values()).map(s => s.code).join(', ');
-            const total = document.getElementById('lblTongTien').textContent;
-            
-            alert(`🎉 Bạn đã chọn thành công các ghế: ${codes}\nTổng tiền: ${total}\n\nThông tin đã được chuyển tiếp tới Dịch vụ Đặt vé (DichVuDatVe) & Dịch vụ Thanh toán (DichVuThanhToan) để hoàn tất quy trình!`);
+            const seatIds = Array.from(selectedSeats.keys()).join(',');
+            window.location.href = `/DatVe/XacNhanDatVe?id=@Model.MaSuatChieu&gheIds=${encodeURIComponent(seatIds)}`;
         }
     </script>
 }
+
 

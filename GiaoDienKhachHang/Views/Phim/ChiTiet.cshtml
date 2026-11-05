@@ -1,8 +1,11 @@
-@model GiaoDienKhachHang.Models.Phim
+﻿@model GiaoDienKhachHang.Models.Phim
 @{
     ViewData["Title"] = Model.TenPhim;
     var suatChieus = ViewBag.SuatChieus as List<GiaoDienKhachHang.Models.SuatChieu> ?? new List<GiaoDienKhachHang.Models.SuatChieu>();
     var groupedByDate = suatChieus.GroupBy(s => s.NgayChieu.Date).OrderBy(g => g.Key);
+    var danhGias = ViewBag.DanhGias as List<GiaoDienKhachHang.Models.DanhGiaPhim> ?? new List<GiaoDienKhachHang.Models.DanhGiaPhim>();
+    var diemTb = (double)(ViewBag.DiemTrungBinh ?? 0);
+    var tongSo = (int)(ViewBag.TongSoDanhGia ?? 0);
 }
 
 <div class="container mt-4 mb-5">
@@ -50,7 +53,7 @@
                         @(Model.TrangThai == "DangChieu" ? "ĐANG CHIẾU" : "SẮP CHIẾU")
                     </span>
                     <span class="badge bg-secondary px-2 py-1 fs-6">
-                        <i class="bi bi-star-fill text-warning me-1"></i>4.8 / 5.0
+                        <i class="bi bi-star-fill text-warning me-1"></i>@(diemTb > 0 ? $"{diemTb:0.0} / 5.0 ({tongSo} đánh giá)" : "Chưa có đánh giá")
                     </span>
                 </div>
 
@@ -164,5 +167,142 @@
             }
         }
     </div>
-</div>
+    <!-- Phần Đánh Giá & Bình Luận Phim (Dịch vụ Đánh giá phim) -->
+    <div class="card bg-card border-secondary rounded-4 p-4 mt-4 shadow-lg" id="danh-gia-phim">
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-secondary">
+            <h4 class="text-white fw-bold mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-star-fill text-warning"></i> KHÁN GIẢ ĐÁNH GIÁ & BÌNH LUẬN
+            </h4>
+            <span class="badge bg-warning text-dark fs-6 px-3 py-2 rounded-pill">
+                @(diemTb > 0 ? $"{diemTb:0.0} / 5.0 ⭐" : "Chưa có sao")
+            </span>
+        </div>
 
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show rounded-3" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show rounded-3" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <div class="row g-4 mb-4">
+            <!-- Tổng quan điểm số -->
+            <div class="col-md-4 text-center border-end border-secondary border-opacity-50">
+                <div class="display-3 fw-bold text-warning mb-0">@(diemTb > 0 ? $"{diemTb:0.0}" : "0")</div>
+                <div class="text-warning fs-5 mb-2">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        if (i <= Math.Round(diemTb))
+                        {
+                            <i class="bi bi-star-fill"></i>
+                        }
+                        else
+                        {
+                            <i class="bi bi-star"></i>
+                        }
+                    }
+                </div>
+                <div class="text-muted small">Dựa trên @tongSo lượt đánh giá từ người xem</div>
+            </div>
+
+            <!-- Form gửi đánh giá -->
+            <div class="col-md-8">
+                <div class="bg-dark p-3 rounded-3 border border-secondary">
+                    <h6 class="text-white fw-bold mb-3"><i class="bi bi-pencil-square text-danger me-2"></i>Viết đánh giá của bạn</h6>
+                    <form asp-action="GuiDanhGia" asp-controller="Phim" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="maPhim" value="@Model.MaPhim" />
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-sm-6">
+                                <label class="form-label text-muted small fw-bold">Chọn số sao trải nghiệm:</label>
+                                <select name="soSao" class="form-select bg-black text-warning border-secondary fw-bold" required>
+                                    <option value="5" selected>⭐⭐⭐⭐⭐ - 5 Sao (Tuyệt phẩm)</option>
+                                    <option value="4">⭐⭐⭐⭐ - 4 Sao (Rất hay)</option>
+                                    <option value="3">⭐⭐⭐ - 3 Sao (Xem được)</option>
+                                    <option value="2">⭐⭐ - 2 Sao (Tạm ổn)</option>
+                                    <option value="1">⭐ - 1 Sao (Kém)</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label text-muted small fw-bold">Email tài khoản (nếu chưa đăng nhập):</label>
+                                <input type="email" name="email" class="form-control bg-black text-light border-secondary" placeholder="Email của bạn..." />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <textarea name="binhLuan" class="form-control bg-black text-light border-secondary" rows="3" placeholder="Chia sẻ cảm nhận về diễn xuất, âm thanh, kỹ xảo của bộ phim..." maxlength="1000"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-cinema btn-sm rounded-pill px-4 fw-bold">
+                            <i class="bi bi-send-fill me-1"></i> Gửi đánh giá ngay
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Danh sách các bình luận cộng đồng -->
+        <h6 class="text-white fw-bold mb-3 d-flex align-items-center gap-2">
+            <i class="bi bi-chat-left-text-fill text-danger"></i> Bình luận từ cộng đồng (@danhGias.Count)
+        </h6>
+
+        @if (!danhGias.Any())
+        {
+            <div class="text-center py-4 text-muted bg-dark rounded-3 border border-secondary border-opacity-50">
+                <i class="bi bi-chat-square-dots display-6 d-block mb-2 text-secondary"></i>
+                Chưa có bình luận nào cho phim này. Hãy là người đầu tiên để lại cảm nhận!
+            </div>
+        }
+        else
+        {
+            <div class="d-flex flex-column gap-3">
+                @foreach (var dg in danhGias)
+                {
+                    <div class="p-3 bg-dark rounded-3 border border-secondary border-opacity-50">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px; font-size: 0.85rem;">
+                                    @(dg.NguoiDung?.HoTen?.Substring(0, 1).ToUpper() ?? "K")
+                                </div>
+                                <div>
+                                    <div class="text-white fw-bold small">@(dg.NguoiDung?.HoTen ?? "Khán giả ẩn danh")</div>
+                                    <div class="text-warning small">
+                                        @for (int s = 1; s <= 5; s++)
+                                        {
+                                            if (s <= dg.SoSao)
+                                            {
+                                                <i class="bi bi-star-fill"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-star"></i>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="text-muted small" style="font-size: 0.75rem;">
+                                <i class="bi bi-clock me-1"></i>@dg.NgayDanhGia.ToString("dd/MM/yyyy HH:mm")
+                            </span>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(dg.BinhLuan))
+                        {
+                            <p class="text-light small mb-0 ps-5" style="white-space: pre-line;">
+                                @dg.BinhLuan
+                            </p>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

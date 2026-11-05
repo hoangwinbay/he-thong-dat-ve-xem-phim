@@ -1,0 +1,144 @@
+@model GiaoDienQuanTri.Models.VeDienTu
+@{
+    ViewData["Title"] = $"Chi tiết vé #{Model.MaVe}";
+    var ct = Model.ChiTietDatVe;
+    var dv = ct?.DatVe;
+    var suat = dv?.SuatChieu;
+    var phim = suat?.Phim;
+    var phong = suat?.PhongChieu;
+    var rap = phong?.RapChieu;
+    var ghe = ct?.GheSuatChieu?.GheNgoi;
+    var qrUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={Uri.EscapeDataString(Model.MaQR)}";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill mb-2">
+            <i class="bi bi-arrow-left me-1"></i> Trở về danh sách vé
+        </a>
+        <h3 class="fw-bold mb-0 text-dark">
+            Chi Tiết Vé Điện Tử #@Model.MaVe
+        </h3>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="SoatVe" class="btn btn-outline-primary rounded-pill px-3">
+            <i class="bi bi-upc-scan me-1"></i> Quầy soát vé
+        </a>
+        @if (Model.TrangThai != "DaHuy")
+        {
+            <form asp-action="HuyVe" asp-route-id="@Model.MaVe" method="post" onsubmit="return confirm('Bạn có chắc chắn muốn hủy vé điện tử này không?');">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-danger rounded-pill px-3">
+                    <i class="bi bi-x-circle me-1"></i> Hủy vé này
+                </button>
+            </form>
+        }
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- QR Code & Status -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 text-center bg-white">
+            <div class="p-3 bg-light rounded-3 d-inline-block border mb-3">
+                <img src="@qrUrl" alt="QR Code" class="img-fluid" style="width: 180px; height: 180px;" />
+            </div>
+            <div class="font-monospace fw-bold text-dark mb-2">@Model.MaQR</div>
+
+            <div class="mb-3">
+                @if (Model.TrangThai == "ChuaSuDung")
+                {
+                    <span class="badge bg-success fs-6 px-3 py-2 rounded-pill">
+                        <i class="bi bi-check-circle me-1"></i>Chưa sử dụng (Hợp lệ)
+                    </span>
+                }
+                else if (Model.TrangThai == "DaSuDung")
+                {
+                    <span class="badge bg-secondary fs-6 px-3 py-2 rounded-pill">
+                        <i class="bi bi-person-check me-1"></i>Đã soát vé
+                    </span>
+                    <div class="small text-muted mt-2">
+                        Thời gian sử dụng: <strong>@Model.NgaySuDung?.ToString("dd/MM/yyyy HH:mm:ss")</strong>
+                    </div>
+                }
+                else if (Model.TrangThai == "DaHuy")
+                {
+                    <span class="badge bg-danger fs-6 px-3 py-2 rounded-pill">
+                        <i class="bi bi-x-circle me-1"></i>Đã hủy
+                    </span>
+                }
+            </div>
+
+            <div class="small text-muted border-top pt-3 text-start">
+                <div>Ngày phát hành: <strong>@Model.NgayPhatHanh.ToString("dd/MM/yyyy HH:mm:ss")</strong></div>
+                <div>Mã chi tiết: <strong>#@Model.MaChiTiet</strong></div>
+                <div>Mã đơn đặt vé: <strong>#@(dv?.MaDatVe ?? 0)</strong></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thông tin chi tiết vé -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+            <h5 class="fw-bold mb-3 border-bottom pb-2">
+                <i class="bi bi-film text-danger me-2"></i> Thông Tin Phim & Suất Chiếu
+            </h5>
+            <div class="row g-3">
+                <div class="col-sm-3 text-center">
+                    @if (!string.IsNullOrEmpty(phim?.Poster))
+                    {
+                        <img src="@phim.Poster" alt="@phim.TenPhim" class="rounded-3 shadow-sm img-fluid" style="max-height: 160px; object-fit: cover;" />
+                    }
+                </div>
+                <div class="col-sm-9">
+                    <span class="badge bg-danger mb-1">@phim?.DoTuoi</span>
+                    <h4 class="fw-bold text-dark mb-1">@phim?.TenPhim</h4>
+                    <div class="text-muted small mb-2">Thời lượng: @phim?.ThoiLuong phút</div>
+
+                    <div class="bg-light p-3 rounded-3">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <span class="text-muted small d-block">Cụm rạp:</span>
+                                <strong class="text-dark">@rap?.TenRap</strong>
+                            </div>
+                            <div class="col-6">
+                                <span class="text-muted small d-block">Phòng chiếu:</span>
+                                <strong class="text-dark">@phong?.TenPhong</strong>
+                            </div>
+                            <div class="col-6 mt-2">
+                                <span class="text-muted small d-block">Ngày chiếu:</span>
+                                <strong class="text-primary">@suat?.NgayChieu.ToString("dd/MM/yyyy")</strong>
+                            </div>
+                            <div class="col-6 mt-2">
+                                <span class="text-muted small d-block">Giờ bắt đầu:</span>
+                                <strong class="text-primary">@suat?.GioBatDau.ToString(@"hh\:mm") ~ @suat?.GioKetThuc.ToString(@"hh\:mm")</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+            <h5 class="fw-bold mb-3 border-bottom pb-2">
+                <i class="bi bi-person-badge text-primary me-2"></i> Khách Hàng & Ghế Ngồi
+            </h5>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="text-muted small mb-1">Khách hàng:</div>
+                    <div class="fw-bold text-dark">@(dv?.NguoiDung?.HoTen ?? "Khách vãng lai")</div>
+                    <div class="text-muted small">Email: @(dv?.NguoiDung?.Email ?? "N/A")</div>
+                    <div class="text-muted small">Điện thoại: @(dv?.NguoiDung?.SoDienThoai ?? "N/A")</div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded-3 text-center">
+                        <div class="text-muted small">Vị trí ghế ngồi:</div>
+                        <div class="display-6 fw-bold text-danger">@ghe?.HangGhe@ghe?.SoGhe</div>
+                        <div class="badge bg-secondary">@ghe?.LoaiGhe</div>
+                        <div class="fw-bold text-success fs-5 mt-1">@ct?.DonGia.ToString("N0") đ</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

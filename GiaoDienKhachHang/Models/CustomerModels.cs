@@ -97,7 +97,6 @@ namespace GiaoDienKhachHang.Models
         public virtual RapChieu? RapChieu { get; set; }
         [Required, MaxLength(100)]
         public string TenPhong { get; set; } = string.Empty;
-        [MaxLength(50)]
         public string? LoaiPhong { get; set; }
         public int? SoLuongGhe { get; set; }
         public virtual ICollection<GheNgoi> GheNgois { get; set; } = new List<GheNgoi>();
@@ -153,5 +152,99 @@ namespace GiaoDienKhachHang.Models
         public string TrangThai { get; set; } = "Trong";
         public DateTime? ThoiGianHetHan { get; set; }
     }
-}
 
+    [Table("DatVe")]
+    public class DatVe
+    {
+        [Key]
+        public int MaDatVe { get; set; }
+        public int MaNguoiDung { get; set; }
+        public virtual NguoiDung? NguoiDung { get; set; }
+        public int MaSuatChieu { get; set; }
+        public virtual SuatChieu? SuatChieu { get; set; }
+        public DateTime NgayDat { get; set; } = DateTime.Now;
+        [Column(TypeName = "decimal(12,2)")]
+        public decimal TongTien { get; set; }
+        [MaxLength(30)]
+        public string TrangThai { get; set; } = "ChoThanhToan";
+        public virtual ICollection<ChiTietDatVe> ChiTietDatVes { get; set; } = new List<ChiTietDatVe>();
+        public virtual ICollection<ThanhToan> ThanhToans { get; set; } = new List<ThanhToan>();
+    }
+
+    [Table("ChiTietDatVe")]
+    public class ChiTietDatVe
+    {
+        [Key]
+        public int MaChiTiet { get; set; }
+        public int MaDatVe { get; set; }
+        public virtual DatVe? DatVe { get; set; }
+        public int MaGheSuatChieu { get; set; }
+        public virtual GheSuatChieu? GheSuatChieu { get; set; }
+        [Column(TypeName = "decimal(12,2)")]
+        public decimal DonGia { get; set; }
+        public virtual VeDienTu? VeDienTu { get; set; }
+    }
+
+    [Table("VeDienTu")]
+    public class VeDienTu
+    {
+        [Key]
+        public int MaVe { get; set; }
+        public int MaChiTiet { get; set; }
+        public virtual ChiTietDatVe? ChiTietDatVe { get; set; }
+        [Required, MaxLength(200)]
+        public string MaQR { get; set; } = string.Empty;
+        public DateTime NgayPhatHanh { get; set; } = DateTime.Now;
+        [MaxLength(30)]
+        public string TrangThai { get; set; } = "ChuaSuDung"; // ChuaSuDung, DaSuDung, DaHuy
+        public DateTime? NgaySuDung { get; set; }
+    }
+
+    [Table("ThanhToan")]
+    public class ThanhToan
+    {
+        [Key]
+        public int MaThanhToan { get; set; }
+        public int MaDatVe { get; set; }
+        public virtual DatVe? DatVe { get; set; }
+        [Required, MaxLength(50)]
+        public string PhuongThuc { get; set; } = string.Empty;
+        [MaxLength(150)]
+        public string? MaGiaoDich { get; set; }
+        [Column(TypeName = "decimal(12,2)")]
+        public decimal SoTien { get; set; }
+        public DateTime NgayThanhToan { get; set; } = DateTime.Now;
+        [MaxLength(30)]
+        public string TrangThai { get; set; } = "ChoXuLy";
+    }
+
+    [Table("ThongBao")]
+    public class ThongBao
+    {
+        [Key]
+        public int MaThongBao { get; set; }
+        public int MaNguoiDung { get; set; }
+        public virtual NguoiDung? NguoiDung { get; set; }
+        [Required, MaxLength(200)]
+        public string TieuDe { get; set; } = string.Empty;
+        public string? NoiDung { get; set; }
+        public DateTime NgayGui { get; set; } = DateTime.Now;
+        public bool DaDoc { get; set; } = false;
+    }
+
+    [Table("DanhGiaPhim")]
+    public class DanhGiaPhim
+    {
+        [Key]
+        public int MaDanhGia { get; set; }
+        public int MaNguoiDung { get; set; }
+        public virtual NguoiDung? NguoiDung { get; set; }
+        public int MaPhim { get; set; }
+        public virtual Phim? Phim { get; set; }
+        [Range(1, 5)]
+        public int SoSao { get; set; }
+        [MaxLength(1000)]
+        public string? BinhLuan { get; set; }
+        public DateTime NgayDanhGia { get; set; } = DateTime.Now;
+    }
+}

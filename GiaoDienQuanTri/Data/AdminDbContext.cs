@@ -18,6 +18,12 @@ namespace GiaoDienQuanTri.Data
         public DbSet<GheNgoi> GheNgois { get; set; } = null!;
         public DbSet<SuatChieu> SuatChieus { get; set; } = null!;
         public DbSet<GheSuatChieu> GheSuatChieus { get; set; } = null!;
+        public DbSet<DatVe> DatVes { get; set; } = null!;
+        public DbSet<ChiTietDatVe> ChiTietDatVes { get; set; } = null!;
+        public DbSet<ThanhToan> ThanhToans { get; set; } = null!;
+        public DbSet<VeDienTu> VeDienTus { get; set; } = null!;
+        public DbSet<ThongBao> ThongBaos { get; set; } = null!;
+        public DbSet<DanhGiaPhim> DanhGiaPhims { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -66,14 +72,60 @@ namespace GiaoDienQuanTri.Data
                 .WithMany()
                 .HasForeignKey(gs => gs.MaGhe);
 
-            modelBuilder.Entity<PhongChieu>()
-                .HasIndex(p => new { p.MaRap, p.TenPhong }).IsUnique();
+            modelBuilder.Entity<DatVe>()
+                .HasOne(dv => dv.NguoiDung)
+                .WithMany()
+                .HasForeignKey(dv => dv.MaNguoiDung);
 
-            modelBuilder.Entity<GheNgoi>()
-                .HasIndex(g => new { g.MaPhong, g.HangGhe, g.SoGhe }).IsUnique();
+            modelBuilder.Entity<DatVe>()
+                .HasOne(dv => dv.SuatChieu)
+                .WithMany()
+                .HasForeignKey(dv => dv.MaSuatChieu);
 
-            modelBuilder.Entity<GheSuatChieu>()
-                .HasIndex(gs => new { gs.MaSuatChieu, gs.MaGhe }).IsUnique();
+            modelBuilder.Entity<ChiTietDatVe>()
+                .HasOne(ct => ct.DatVe)
+                .WithMany(dv => dv.ChiTietDatVes)
+                .HasForeignKey(ct => ct.MaDatVe)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ChiTietDatVe>()
+                .HasOne(ct => ct.GheSuatChieu)
+                .WithMany()
+                .HasForeignKey(ct => ct.MaGheSuatChieu);
+
+            modelBuilder.Entity<ThanhToan>()
+                .HasOne(tt => tt.DatVe)
+                .WithMany(dv => dv.ThanhToans)
+                .HasForeignKey(tt => tt.MaDatVe)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<VeDienTu>()
+                .HasOne(v => v.ChiTietDatVe)
+                .WithOne(ct => ct.VeDienTu)
+                .HasForeignKey<VeDienTu>(v => v.MaChiTiet)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ThongBao>()
+                .HasOne(tb => tb.NguoiDung)
+                .WithMany()
+                .HasForeignKey(tb => tb.MaNguoiDung)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DanhGiaPhim>()
+                .HasIndex(dg => new { dg.MaNguoiDung, dg.MaPhim })
+                .IsUnique();
+
+            modelBuilder.Entity<DanhGiaPhim>()
+                .HasOne(dg => dg.NguoiDung)
+                .WithMany()
+                .HasForeignKey(dg => dg.MaNguoiDung)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DanhGiaPhim>()
+                .HasOne(dg => dg.Phim)
+                .WithMany()
+                .HasForeignKey(dg => dg.MaPhim)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

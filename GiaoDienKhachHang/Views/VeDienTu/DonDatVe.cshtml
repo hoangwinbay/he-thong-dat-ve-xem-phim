@@ -1,0 +1,160 @@
+@model GiaoDienKhachHang.Models.DatVe
+@{
+    ViewData["Title"] = $"Vé Điện Tử - Đơn #{Model.MaDatVe}";
+    var suat = Model.SuatChieu;
+    var phim = suat?.Phim;
+    var phong = suat?.PhongChieu;
+    var rap = phong?.RapChieu;
+}
+
+<div class="container mt-4 mb-5">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <a asp-controller="LichSuDatVe" asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill mb-2">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại lịch sử vé
+            </a>
+            <h3 class="text-white fw-bold mb-1 d-flex align-items-center gap-2">
+                <i class="bi bi-qr-code-scan text-warning"></i> VÉ XEM PHIM ĐIỆN TỬ (E-TICKET)
+            </h3>
+            <p class="text-muted small mb-0">Vui lòng xuất trình mã QR này tại quầy soát vé hoặc cổng tự động trước giờ chiếu 15 phút</p>
+        </div>
+        <div>
+            <button onclick="window.print()" class="btn btn-warning rounded-pill px-4 fw-bold text-dark shadow">
+                <i class="bi bi-printer-fill me-1"></i> In tất cả vé
+            </button>
+        </div>
+    </div>
+
+    <!-- Thông tin phim tóm tắt -->
+    <div class="card bg-card border-secondary rounded-4 p-4 mb-4 shadow-lg">
+        <div class="row g-4 align-items-center">
+            <div class="col-md-2 text-center text-md-start">
+                @if (!string.IsNullOrEmpty(phim?.Poster))
+                {
+                    <img src="@phim.Poster" alt="@phim.TenPhim" class="rounded-3 shadow-sm img-fluid" style="max-height: 180px; object-fit: cover;" />
+                }
+            </div>
+            <div class="col-md-7">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-danger">@phim?.DoTuoi</span>
+                    <span class="badge bg-secondary">@phim?.ThoiLuong phút</span>
+                    <span class="badge bg-success">Đơn #@Model.MaDatVe</span>
+                </div>
+                <h4 class="text-white fw-bold mb-2">@phim?.TenPhim</h4>
+                <div class="text-muted small mb-1">
+                    <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                    <strong class="text-light">@rap?.TenRap</strong> - @rap?.DiaChi
+                </div>
+                <div class="text-muted small mb-2">
+                    <i class="bi bi-door-closed-fill text-info me-1"></i>
+                    Phòng chiếu: <strong class="text-light">@phong?.TenPhong</strong>
+                </div>
+                <div class="text-warning fw-bold">
+                    <i class="bi bi-clock-fill me-1"></i>
+                    @suat?.GioBatDau.ToString(@"hh\:mm") ~ @suat?.GioKetThuc.ToString(@"hh\:mm") | Ngày: @suat?.NgayChieu.ToString("dd/MM/yyyy")
+                </div>
+            </div>
+            <div class="col-md-3 text-md-end border-start border-secondary border-opacity-50 ps-md-4">
+                <div class="small text-muted mb-1">Khách hàng:</div>
+                <div class="text-white fw-bold">@(Model.NguoiDung?.HoTen ?? "Khách hàng")</div>
+                <div class="small text-muted mb-3">@(Model.NguoiDung?.Email ?? "")</div>
+                <div class="small text-muted mb-1">Số lượng vé:</div>
+                <div class="fs-4 text-warning fw-bold">@Model.ChiTietDatVes.Count vé</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danh sách các vé điện tử & QR code -->
+    <h5 class="text-white fw-bold mb-3 d-flex align-items-center gap-2">
+        <i class="bi bi-ticket-perforated-fill text-danger"></i> Chi tiết từng vé
+    </h5>
+
+    <div class="row g-4">
+        @foreach (var ct in Model.ChiTietDatVes)
+        {
+            var ve = ct.VeDienTu;
+            var ghe = ct.GheSuatChieu?.GheNgoi;
+            var qrUrl = ve != null ? $"https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={Uri.EscapeDataString(ve.MaQR)}" : "";
+
+            <div class="col-lg-6">
+                <div class="card bg-card border-secondary rounded-4 p-4 shadow-sm position-relative overflow-hidden ticket-card h-100">
+                    <!-- Ticket cutouts decoration -->
+                    <div style="position: absolute; left: -12px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; border-radius: 50%; background-color: #0d0f17;"></div>
+                    <div style="position: absolute; right: -12px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; border-radius: 50%; background-color: #0d0f17;"></div>
+
+                    <div class="row g-3 align-items-center">
+                        <!-- QR Code -->
+                        <div class="col-sm-5 text-center">
+                            @if (!string.IsNullOrEmpty(qrUrl))
+                            {
+                                <div class="bg-white p-2 rounded-3 d-inline-block shadow-sm">
+                                    <img src="@qrUrl" alt="QR Code" class="img-fluid" style="width: 140px; height: 140px;" />
+                                </div>
+                                <div class="text-muted font-monospace small mt-2" style="font-size: 0.75rem;">
+                                    @ve?.MaQR
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-danger small">Chưa có mã QR</div>
+                            }
+                        </div>
+
+                        <!-- Ticket Info -->
+                        <div class="col-sm-7 ps-sm-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge bg-danger rounded-pill px-3 py-1">Vé #@ve?.MaVe</span>
+                                @if (ve?.TrangThai == "ChuaSuDung")
+                                {
+                                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Hợp lệ</span>
+                                }
+                                else if (ve?.TrangThai == "DaSuDung")
+                                {
+                                    <span class="badge bg-secondary"><i class="bi bi-check2-all me-1"></i>Đã soát vé</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">@ve?.TrangThai</span>
+                                }
+                            </div>
+
+                            <div class="bg-black bg-opacity-50 p-3 rounded-3 border border-secondary border-opacity-50 mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="text-muted small">Ghế ngồi:</span>
+                                    <span class="badge bg-warning text-dark fs-6 fw-bold">@ghe?.HangGhe@ghe?.SoGhe</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="text-muted small">Loại ghế:</span>
+                                    <span class="text-white small">@ghe?.LoaiGhe</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted small">Giá vé:</span>
+                                    <span class="text-danger fw-bold">@ct.DonGia.ToString("N0") đ</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                @if (ve != null)
+                                {
+                                    <a asp-action="ChiTiet" asp-route-id="@ve.MaVe" class="btn btn-outline-warning btn-sm rounded-pill flex-grow-1">
+                                        <i class="bi bi-eye me-1"></i> Xem thẻ vé
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+@@media print {
+    body { background-color: #fff !important; color: #000 !important; }
+    .btn, nav, footer { display: none !important; }
+    .card { border: 1px solid #ccc !important; background-color: #fff !important; color: #000 !important; }
+    .text-white, .text-light, .text-warning { color: #000 !important; }
+}
+</style>

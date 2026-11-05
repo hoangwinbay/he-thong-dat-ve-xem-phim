@@ -1,0 +1,51 @@
+@model GiaoDienKhachHang.Models.ThongBao
+@{
+    ViewData["Title"] = Model.TieuDe;
+}
+
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i> Quay lại hộp thư
+                </a>
+                <span class="text-muted small">
+                    <i class="bi bi-clock me-1"></i> Gửi lúc: @Model.NgayGui.ToString("dd/MM/yyyy HH:mm:ss")
+                </span>
+            </div>
+
+            <div class="card bg-card border-secondary rounded-4 p-4 p-md-5 shadow-lg position-relative overflow-hidden">
+                <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom border-secondary">
+                    <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center shadow-sm" style="width: 56px; height: 56px;">
+                        <i class="bi bi-bell-fill fs-4"></i>
+                    </div>
+                    <div>
+                        <span class="badge bg-danger rounded-pill mb-1">CINEBOOKING NOTIFICATION</span>
+                        <h4 class="text-white fw-bold mb-0">@Model.TieuDe</h4>
+                    </div>
+                </div>
+
+                <div class="text-light fs-6 mb-4 lh-lg" style="white-space: pre-line;">
+                    @Model.NoiDung
+                </div>
+
+                <div class="card bg-dark border-secondary rounded-3 p-3 mb-4">
+                    <div class="d-flex justify-content-between align-items-center small text-muted">
+                        <span>Người nhận: <strong class="text-white">@(Model.NguoiDung?.HoTen ?? "Khách hàng")</strong> (@(Model.NguoiDung?.Email ?? ""))</span>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Đã đọc</span>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 justify-content-end">
+                    <a asp-controller="VeDienTu" asp-action="DonDatVe" class="btn btn-warning rounded-pill px-4 fw-bold text-dark">
+                        <i class="bi bi-ticket-perforated me-1"></i> Kiểm tra vé xem phim
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4">
+                        <i class="bi bi-inbox me-1"></i> Tất cả thông báo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,172 @@
+@{
+    ViewData["Title"] = "Quầy Soát Vé & Check-in Rạp";
+    var ve = ViewBag.Ve as GiaoDienQuanTri.Models.VeDienTu;
+    var ct = ve?.ChiTietDatVe;
+    var dv = ct?.DatVe;
+    var suat = dv?.SuatChieu;
+    var phim = suat?.Phim;
+    var phong = suat?.PhongChieu;
+    var rap = phong?.RapChieu;
+    var ghe = ct?.GheSuatChieu?.GheNgoi;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-upc-scan text-primary me-2"></i> Quầy Soát Vé & Check-in Cổng Tự Động
+        </h3>
+        <p class="text-muted small mb-0">Hệ thống quét mã QR soát vé tự động - Dịch vụ Quản lý vé điện tử</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-3">
+        <i class="bi bi-arrow-left me-1"></i> Trở về danh sách vé
+    </a>
+</div>
+
+<div class="row g-4 justify-content-center">
+    <!-- Cột Quét Mã / Nhập liệu -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm rounded-4 p-4 text-center">
+            <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary bg-opacity-10 text-primary mb-3 mx-auto" style="width: 70px; height: 70px;">
+                <i class="bi bi-qr-code fs-1"></i>
+            </div>
+            <h5 class="fw-bold mb-1">Máy Quét / Nhập Mã Soát Vé</h5>
+            <p class="text-muted small mb-4">Quét đầu đọc barcode/QR hoặc nhập mã vé để hệ thống kiểm tra tính hợp lệ</p>
+
+            <form asp-action="SoatVe" method="post" id="formSoatVe">
+                @Html.AntiForgeryToken()
+                <div class="mb-3 text-start">
+                    <label class="form-label fw-bold small text-muted">Mã QR hoặc Mã Vé:</label>
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-light"><i class="bi bi-barcode"></i></span>
+                        <input type="text" name="maQR" value="@ViewBag.MaQR" class="form-control font-monospace" placeholder="CGV-... hoặc mã vé" autofocus required />
+                    </div>
+                    <div class="form-text">Con trỏ đã được đặt tự động vào ô để máy quét mã vạch bắn trực tiếp.</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow-sm">
+                    <i class="bi bi-check2-circle me-1"></i> Kiểm Tra & Soát Vé Ngay
+                </button>
+            </form>
+
+            <div class="mt-4 pt-3 border-top text-start">
+                <div class="small fw-bold text-muted mb-2"><i class="bi bi-info-circle me-1"></i>Quy tắc soát vé tự động:</div>
+                <ul class="small text-muted ps-3 mb-0">
+                    <li>Vé ở trạng thái <strong>Chưa sử dụng</strong> sẽ được chuyển sang <strong>Đã soát vé</strong> ngay tức thì.</li>
+                    <li>Nếu vé đã quét trước đó, hệ thống sẽ cảnh báo đỏ để tránh gian lận trùng vé.</li>
+                    <li>Vé đã bị hủy/hoàn tiền sẽ bị từ chối tuyệt đối.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cột Hiển thị Kết quả Soát vé -->
+    <div class="col-lg-7">
+        @if (ViewBag.Success != null)
+        {
+            <div class="alert alert-success border-0 shadow-sm rounded-4 p-4 mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-check-circle-fill display-4 text-success"></i>
+                    <div>
+                        <h4 class="fw-bold mb-1 text-success">VÉ HỢP LỆ - SOÁT VÉ THÀNH CÔNG!</h4>
+                        <div class="text-success-emphasis">@ViewBag.Success</div>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (ViewBag.Warning != null)
+        {
+            <div class="alert alert-warning border-0 shadow-sm rounded-4 p-4 mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-exclamation-triangle-fill display-4 text-warning"></i>
+                    <div>
+                        <h4 class="fw-bold mb-1 text-dark">CẢNH BÁO TRÙNG HOẶC HỦY VÉ!</h4>
+                        <div class="text-dark">@ViewBag.Warning</div>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger border-0 shadow-sm rounded-4 p-4 mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-x-circle-fill display-4 text-danger"></i>
+                    <div>
+                        <h4 class="fw-bold mb-1 text-danger">KHÔNG HỢP LỆ!</h4>
+                        <div class="text-danger-emphasis">@ViewBag.Error</div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (ve != null)
+        {
+            <!-- Chi tiết vé vừa soát -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                <div class="d-flex justify-content-between align-items-center pb-3 border-bottom mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-danger rounded-pill px-3 py-1">Vé #@ve.MaVe</span>
+                        <span class="badge bg-primary rounded-pill px-3 py-1">Đơn #@(dv?.MaDatVe ?? 0)</span>
+                    </div>
+                    <div>
+                        @if (ve.TrangThai == "DaSuDung")
+                        {
+                            <span class="badge bg-success fs-6"><i class="bi bi-check2 me-1"></i>Đã vào rạp (@ve.NgaySuDung?.ToString("HH:mm:ss"))</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger fs-6">@ve.TrangThai</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="row g-3 align-items-center mb-3">
+                    <div class="col-sm-3 text-center">
+                        @if (!string.IsNullOrEmpty(phim?.Poster))
+                        {
+                            <img src="@phim.Poster" alt="@phim.TenPhim" class="rounded-3 shadow-sm img-fluid" style="max-height: 140px; object-fit: cover;" />
+                        }
+                    </div>
+                    <div class="col-sm-9">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-danger">@phim?.DoTuoi</span>
+                            <span class="text-muted small">@phim?.ThoiLuong phút</span>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-1">@phim?.TenPhim</h4>
+                        <div class="text-muted small mb-1"><i class="bi bi-geo-alt-fill text-danger me-1"></i>@rap?.TenRap • <strong class="text-dark">@phong?.TenPhong</strong></div>
+                        <div class="text-primary fw-bold"><i class="bi bi-calendar-event me-1"></i>@suat?.NgayChieu.ToString("dd/MM/yyyy") | @suat?.GioBatDau.ToString(@"hh\:mm")</div>
+                    </div>
+                </div>
+
+                <div class="bg-light p-3 rounded-3 mb-3">
+                    <div class="row g-2 text-center">
+                        <div class="col-4">
+                            <div class="text-muted small">Vị trí ghế:</div>
+                            <div class="fs-3 fw-bold text-danger">@ghe?.HangGhe@ghe?.SoGhe</div>
+                        </div>
+                        <div class="col-4 border-start border-end">
+                            <div class="text-muted small">Loại ghế:</div>
+                            <div class="fs-5 fw-bold text-dark">@ghe?.LoaiGhe</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-muted small">Giá vé:</div>
+                            <div class="fs-5 fw-bold text-success">@ct?.DonGia.ToString("N0") đ</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="small text-muted d-flex justify-content-between pt-2">
+                    <span>Khách hàng: <strong class="text-dark">@(dv?.NguoiDung?.HoTen ?? "Khách vãng lai")</strong> - @(dv?.NguoiDung?.SoDienThoai ?? "")</span>
+                    <span class="font-monospace">QR: @ve.MaQR</span>
+                </div>
+            </div>
+        }
+        else if (ViewBag.Success == null && ViewBag.Warning == null && ViewBag.Error == null)
+        {
+            <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white h-100 d-flex flex-column justify-content-center">
+                <i class="bi bi-upc-scan display-1 text-muted opacity-50 mb-3"></i>
+                <h5 class="text-muted fw-bold">Sẵn sàng nhận tín hiệu quét vé</h5>
+                <p class="text-muted small mb-0">Khi vé được quét, thông tin phim, suất chiếu, ghế ngồi và trạng thái sẽ hiển thị tức thì tại đây.</p>
+            </div>
+        }
+    </div>
+</div>

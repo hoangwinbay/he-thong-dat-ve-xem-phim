@@ -1,0 +1,221 @@
+@model IEnumerable<GiaoDienQuanTri.Models.ThanhToan>
+@{
+    ViewData["Title"] = "Quản lý thanh toán";
+    var tongDoanhThu = (decimal)(ViewBag.TongDoanhThu ?? 0);
+    var soThanhCong = (int)(ViewBag.SoGiaoDichThanhCong ?? 0);
+    var soChoXuLy = (int)(ViewBag.SoGiaoDichChoXuLy ?? 0);
+    var soHoanTien = (int)(ViewBag.SoGiaoDichHoanTien ?? 0);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0 text-dark">
+        <i class="bi bi-credit-card-2-front-fill text-danger me-2"></i> Quản Lý Thanh Toán (Dịch Vụ 7)
+    </h3>
+    <span class="badge bg-danger fs-6 px-3 py-2 rounded-pill">
+        Tổng số: @Model.Count() giao dịch
+    </span>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Hộp thống kê doanh thu nhanh -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3 bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted small">Tổng Doanh Thu</div>
+                    <div class="fs-4 fw-bold text-success">@tongDoanhThu.ToString("N0") đ</div>
+                </div>
+                <div class="rounded-circle bg-success bg-opacity-10 text-success p-3">
+                    <i class="bi bi-cash-coin fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3 bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted small">Thành Công</div>
+                    <div class="fs-4 fw-bold text-primary">@soThanhCong giao dịch</div>
+                </div>
+                <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3">
+                    <i class="bi bi-check2-circle fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3 bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted small">Chờ Xử Lý</div>
+                    <div class="fs-4 fw-bold text-warning">@soChoXuLy</div>
+                </div>
+                <div class="rounded-circle bg-warning bg-opacity-10 text-warning p-3">
+                    <i class="bi bi-hourglass-split fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3 bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted small">Hoàn Tiền / Hủy</div>
+                    <div class="fs-4 fw-bold text-danger">@soHoanTien</div>
+                </div>
+                <div class="rounded-circle bg-danger bg-opacity-10 text-danger p-3">
+                    <i class="bi bi-arrow-counterclockwise fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bộ lọc giao dịch -->
+<div class="card mb-4 border-0 shadow-sm">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-5">
+                <input type="text" name="search" value="@ViewBag.Search" class="form-control" placeholder="Tìm theo mã GD, mã đơn, khách hàng..." />
+            </div>
+            <div class="col-md-3">
+                <select name="trangThai" class="form-select">
+                    <option value="">-- Tất cả trạng thái --</option>
+                    <option value="ThanhCong" selected="@(ViewBag.TrangThai == "ThanhCong")">Thành công (ThanhCong)</option>
+                    <option value="ChoXuLy" selected="@(ViewBag.TrangThai == "ChoXuLy")">Chờ xử lý (ChoXuLy)</option>
+                    <option value="HoanTien" selected="@(ViewBag.TrangThai == "HoanTien")">Hoàn tiền (HoanTien)</option>
+                    <option value="ThatBai" selected="@(ViewBag.TrangThai == "ThatBai")">Thất bại (ThatBai)</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="phuongThuc" class="form-select">
+                    <option value="">-- Phương thức --</option>
+                    <option value="VNPAY" selected="@(ViewBag.PhuongThuc == "VNPAY")">VNPAY</option>
+                    <option value="MOMO" selected="@(ViewBag.PhuongThuc == "MOMO")">MoMo</option>
+                    <option value="TheQuocTe" selected="@(ViewBag.PhuongThuc == "TheQuocTe")">Thẻ quốc tế</option>
+                    <option value="TienMatTaiRap" selected="@(ViewBag.PhuongThuc == "TienMatTaiRap")">Tiền mặt tại rạp</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-dark w-100">
+                    <i class="bi bi-search me-1"></i> Lọc GD
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 80px;">Mã TT</th>
+                        <th>Mã Giao Dịch</th>
+                        <th>Đơn Vé</th>
+                        <th>Khách Hàng</th>
+                        <th>Phương Thức</th>
+                        <th>Số Tiền</th>
+                        <th>Thời Gian</th>
+                        <th>Trạng Thái</th>
+                        <th class="text-center" style="width: 120px;">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center py-4 text-muted">
+                                Không có giao dịch thanh toán nào phù hợp điều kiện lọc.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var tt in Model)
+                    {
+                        var dv = tt.DatVe;
+                        <tr>
+                            <td><strong>#@tt.MaThanhToan</strong></td>
+                            <td>
+                                <span class="badge bg-dark font-monospace text-light">@(tt.MaGiaoDich ?? "N/A")</span>
+                            </td>
+                            <td>
+                                <a asp-controller="QuanLyDatVe" asp-action="ChiTiet" asp-route-id="@tt.MaDatVe" class="text-danger fw-bold text-decoration-none">
+                                    #@tt.MaDatVe
+                                </a>
+                                <div class="small text-muted">@(dv?.SuatChieu?.Phim?.TenPhim ?? "Phim")</div>
+                            </td>
+                            <td>
+                                <strong>@(dv?.NguoiDung?.HoTen ?? "Khách lẻ")</strong>
+                                <div class="small text-muted">@(dv?.NguoiDung?.Email ?? "")</div>
+                            </td>
+                            <td>
+                                @if (tt.PhuongThuc == "VNPAY")
+                                {
+                                    <span class="badge bg-info text-dark">VNPAY-QR</span>
+                                }
+                                else if (tt.PhuongThuc == "MOMO")
+                                {
+                                    <span class="badge bg-danger">Ví MoMo</span>
+                                }
+                                else if (tt.PhuongThuc == "TheQuocTe")
+                                {
+                                    <span class="badge bg-warning text-dark">Thẻ Quốc Tế</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@tt.PhuongThuc</span>
+                                }
+                            </td>
+                            <td>
+                                <strong class="text-success fs-6">@tt.SoTien.ToString("N0") đ</strong>
+                            </td>
+                            <td>
+                                <small class="text-muted">@tt.NgayThanhToan.ToString("dd/MM/yyyy HH:mm")</small>
+                            </td>
+                            <td>
+                                @if (tt.TrangThai == "ThanhCong")
+                                {
+                                    <span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i>Thành công</span>
+                                }
+                                else if (tt.TrangThai == "ChoXuLy")
+                                {
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-hourglass me-1"></i>Chờ xử lý</span>
+                                }
+                                else if (tt.TrangThai == "HoanTien")
+                                {
+                                    <span class="badge bg-danger"><i class="bi bi-arrow-counterclockwise me-1"></i>Hoàn tiền</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@tt.TrangThai</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <a asp-action="ChiTiet" asp-route-id="@tt.MaThanhToan" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

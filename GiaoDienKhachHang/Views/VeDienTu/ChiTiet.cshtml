@@ -1,0 +1,121 @@
+@model GiaoDienKhachHang.Models.VeDienTu
+@{
+    ViewData["Title"] = $"Thẻ Vé Điện Tử #{Model.MaVe}";
+    var ct = Model.ChiTietDatVe;
+    var dv = ct?.DatVe;
+    var suat = dv?.SuatChieu;
+    var phim = suat?.Phim;
+    var phong = suat?.PhongChieu;
+    var rap = phong?.RapChieu;
+    var ghe = ct?.GheSuatChieu?.GheNgoi;
+    var qrUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=220x220&data={Uri.EscapeDataString(Model.MaQR)}";
+}
+
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <a asp-action="DonDatVe" asp-route-maDatVe="@(dv?.MaDatVe ?? 0)" class="btn btn-outline-secondary btn-sm rounded-pill">
+                    <i class="bi bi-arrow-left me-1"></i> Đơn vé #@(dv?.MaDatVe ?? 0)
+                </a>
+                <button onclick="window.print()" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark">
+                    <i class="bi bi-printer me-1"></i> In vé này
+                </button>
+            </div>
+
+            <!-- Authentic Cinema Ticket Stub -->
+            <div class="card bg-card border border-warning rounded-4 shadow-lg overflow-hidden position-relative">
+                <!-- Top Brand Banner -->
+                <div class="bg-danger text-white px-4 py-3 d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-film fs-4"></i>
+                        <span class="fw-bold fs-5 tracking-wider">CINEBOOKING</span>
+                    </div>
+                    <span class="badge bg-warning text-dark fw-bold px-2 py-1">VÉ ĐIỆN TỬ</span>
+                </div>
+
+                <!-- Ticket Content -->
+                <div class="p-4">
+                    <div class="text-center mb-4">
+                        <span class="badge bg-danger mb-2">@phim?.DoTuoi</span>
+                        <h4 class="text-white fw-bold mb-1">@phim?.TenPhim</h4>
+                        <div class="small text-muted">@phim?.ThoiLuong phút • Phụ đề tiếng Việt</div>
+                    </div>
+
+                    <!-- QR Code Frame -->
+                    <div class="text-center mb-4">
+                        <div class="p-3 bg-white rounded-3 d-inline-block shadow">
+                            <img src="@qrUrl" alt="QR Code" class="img-fluid" style="width: 180px; height: 180px;" />
+                        </div>
+                        <div class="mt-2 font-monospace text-warning small fw-bold">
+                            @Model.MaQR
+                        </div>
+                        <div class="text-muted small mt-1">
+                            @if (Model.TrangThai == "ChuaSuDung")
+                            {
+                                <span class="badge bg-success px-3 py-1">CHƯA SỬ DỤNG - HỢP LỆ</span>
+                            }
+                            else if (Model.TrangThai == "DaSuDung")
+                            {
+                                <span class="badge bg-secondary px-3 py-1">ĐÃ CHECK-IN LÚC @Model.NgaySuDung?.ToString("HH:mm - dd/MM/yyyy")</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger px-3 py-1">@Model.TrangThai.ToUpper()</span>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Perforated Line -->
+                    <div class="d-flex align-items-center justify-content-between my-3 position-relative">
+                        <div style="width: 20px; height: 20px; border-radius: 50%; background-color: #0d0f17; margin-left: -24px;"></div>
+                        <div class="border-top border-2 border-dashed border-secondary flex-grow-1 mx-2"></div>
+                        <div style="width: 20px; height: 20px; border-radius: 50%; background-color: #0d0f17; margin-right: -24px;"></div>
+                    </div>
+
+                    <!-- Show details grid -->
+                    <div class="row g-2 text-start pt-2">
+                        <div class="col-6">
+                            <span class="text-muted small d-block">Rạp chiếu:</span>
+                            <span class="text-white fw-bold small">@rap?.TenRap</span>
+                        </div>
+                        <div class="col-6 text-end">
+                            <span class="text-muted small d-block">Phòng chiếu:</span>
+                            <span class="text-white fw-bold small">@phong?.TenPhong</span>
+                        </div>
+
+                        <div class="col-6 mt-3">
+                            <span class="text-muted small d-block">Ngày chiếu:</span>
+                            <span class="text-warning fw-bold">@suat?.NgayChieu.ToString("dd/MM/yyyy")</span>
+                        </div>
+                        <div class="col-6 mt-3 text-end">
+                            <span class="text-muted small d-block">Giờ bắt đầu:</span>
+                            <span class="text-warning fw-bold fs-5">@suat?.GioBatDau.ToString(@"hh\:mm")</span>
+                        </div>
+
+                        <div class="col-6 mt-3">
+                            <span class="text-muted small d-block">Vị trí ghế:</span>
+                            <span class="badge bg-warning text-dark fs-5 fw-bold px-3 py-1">@ghe?.HangGhe@ghe?.SoGhe</span>
+                        </div>
+                        <div class="col-6 mt-3 text-end">
+                            <span class="text-muted small d-block">Loại vé / Giá:</span>
+                            <span class="text-danger fw-bold fs-5">@ct?.DonGia.ToString("N0") đ</span>
+                        </div>
+
+                        <div class="col-12 mt-3 pt-3 border-top border-secondary border-opacity-50">
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span>Khách hàng: <strong class="text-light">@(dv?.NguoiDung?.HoTen ?? "Khách vãng lai")</strong></span>
+                                <span>Mã vé: <strong class="text-light">#@Model.MaVe</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer hint -->
+                <div class="bg-black bg-opacity-50 px-4 py-2 text-center text-muted small border-top border-secondary border-opacity-50" style="font-size: 0.75rem;">
+                    Vé chỉ có giá trị cho 1 người / 1 lần vào cửa tại đúng suất chiếu đã ghi trên vé.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

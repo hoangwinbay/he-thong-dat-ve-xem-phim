@@ -1,0 +1,202 @@
+@model GiaoDienQuanTri.Models.DatVe
+@{
+    ViewData["Title"] = "Chi tiết đơn đặt vé #" + Model.MaDatVe;
+    var suat = Model.SuatChieu;
+    var phim = suat?.Phim;
+    var phong = suat?.PhongChieu;
+    var rap = phong?.RapChieu;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm mb-2">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+        </a>
+        <h3 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-receipt text-danger me-2"></i> Chi Tiết Đơn Đặt Vé <span class="text-danger">#@Model.MaDatVe</span>
+        </h3>
+    </div>
+    <div>
+        @if (Model.TrangThai == "ChoThanhToan")
+        {
+            <span class="badge bg-warning text-dark fs-6 px-3 py-2 rounded-pill">
+                <i class="bi bi-hourglass-split me-1"></i> Chờ thanh toán
+            </span>
+        }
+        else if (Model.TrangThai == "DaThanhToan")
+        {
+            <span class="badge bg-success fs-6 px-3 py-2 rounded-pill">
+                <i class="bi bi-check-circle-fill me-1"></i> Đã thanh toán
+            </span>
+        }
+        else if (Model.TrangThai == "DaHuy")
+        {
+            <span class="badge bg-secondary fs-6 px-3 py-2 rounded-pill">
+                <i class="bi bi-x-circle me-1"></i> Đã hủy
+            </span>
+        }
+        else
+        {
+            <span class="badge bg-danger fs-6 px-3 py-2 rounded-pill">
+                @Model.TrangThai
+            </span>
+        }
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <!-- Cột trái: Thông tin vé & Ghế -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-film text-danger me-2"></i> Thông Tin Suất Chiếu</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3 text-center">
+                        <img src="/@phim?.Poster" class="rounded shadow-sm img-fluid" style="max-height: 160px; object-fit: cover;" onerror="this.src='https://placehold.co/100x150?text=Phim';" />
+                    </div>
+                    <div class="col-md-9">
+                        <h4 class="fw-bold text-dark mb-1">@phim?.TenPhim</h4>
+                        <div class="mb-2">
+                            <span class="badge bg-danger">@phim?.DoTuoi</span>
+                            <span class="badge bg-secondary">@phim?.ThoiLuong phút</span>
+                        </div>
+                        <ul class="list-unstyled text-muted small mb-0">
+                            <li class="mb-1"><strong>Cụm rạp:</strong> @rap?.TenRap (@rap?.DiaChi)</li>
+                            <li class="mb-1"><strong>Phòng chiếu:</strong> @phong?.TenPhong (@phong?.LoaiPhong)</li>
+                            <li class="mb-1"><strong>Ngày chiếu:</strong> @suat?.NgayChieu.ToString("dd/MM/yyyy")</li>
+                            <li><strong>Khung giờ:</strong> <span class="text-danger fw-bold">@suat?.GioBatDau.ToString(@"hh\:mm") - @suat?.GioKetThuc.ToString(@"hh\:mm")</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-grid-3x3-gap-fill text-danger me-2"></i> Danh Sách Ghế Đặt (@Model.ChiTietDatVes.Count ghế)</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Mã Ghế</th>
+                                <th>Vị Trí Ghế</th>
+                                <th>Phân Loại</th>
+                                <th class="text-end">Đơn Giá</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ct in Model.ChiTietDatVes)
+                            {
+                                var ghe = ct.GheSuatChieu?.GheNgoi;
+                                <tr>
+                                    <td>#@ct.MaGheSuatChieu</td>
+                                    <td>
+                                        <span class="badge bg-danger fs-6 px-3 py-1">
+                                            @ghe?.HangGhe@ghe?.SoGhe
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge @(ghe?.LoaiGhe == "VIP" ? "bg-warning text-dark" : ghe?.LoaiGhe == "Doi" ? "bg-info text-dark" : "bg-secondary")">
+                                            Ghế @ghe?.LoaiGhe
+                                        </span>
+                                    </td>
+                                    <td class="text-end fw-bold">@ct.DonGia.ToString("N0") đ</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <th colspan="3" class="fs-5">Tổng tiền hóa đơn:</th>
+                                <th class="text-end text-danger fs-4 fw-bold">@Model.TongTien.ToString("N0") đ</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cột phải: Thông tin khách hàng & Chức năng chuyển đổi trạng thái -->
+    <div class="col-lg-4">
+        <!-- Khách hàng -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-person-circle text-danger me-2"></i> Người Đặt Vé</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <small class="text-muted d-block">Họ tên:</small>
+                        <strong>@(Model.NguoiDung?.HoTen ?? "Khách vãng lai")</strong>
+                    </li>
+                    <li class="mb-2">
+                        <small class="text-muted d-block">Email:</small>
+                        <a href="mailto:@Model.NguoiDung?.Email" class="text-decoration-none">@(Model.NguoiDung?.Email ?? "N/A")</a>
+                    </li>
+                    <li class="mb-2">
+                        <small class="text-muted d-block">Số điện thoại:</small>
+                        <strong>@(Model.NguoiDung?.SoDienThoai ?? "Chưa cung cấp")</strong>
+                    </li>
+                    <li>
+                        <small class="text-muted d-block">Thời điểm tạo đơn:</small>
+                        <span>@Model.NgayDat.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Cập nhật trạng thái -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-gear-fill text-danger me-2"></i> Cập Nhật Trạng Thái</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="CapNhatTrangThai" method="post" class="mb-3">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.MaDatVe" />
+
+                    <label class="form-label small text-muted">Thay đổi trạng thái đơn:</label>
+                    <select name="trangThai" class="form-select mb-3">
+                        <option value="ChoThanhToan" selected="@(Model.TrangThai == "ChoThanhToan")">Chờ thanh toán (ChoThanhToan)</option>
+                        <option value="DaThanhToan" selected="@(Model.TrangThai == "DaThanhToan")">Đã thanh toán (DaThanhToan)</option>
+                        <option value="DaHuy" selected="@(Model.TrangThai == "DaHuy")">Đã hủy (DaHuy)</option>
+                        <option value="HetHan" selected="@(Model.TrangThai == "HetHan")">Hết hạn (HetHan)</option>
+                    </select>
+
+                    <button type="submit" class="btn btn-primary w-100 mb-2">
+                        <i class="bi bi-save me-1"></i> Lưu thay đổi trạng thái
+                    </button>
+                </form>
+
+                <hr />
+
+                <form asp-action="XoaDonDatVe" method="post" onsubmit="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn xóa vĩnh viễn đơn đặt vé #@Model.MaDatVe không?');">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.MaDatVe" />
+                    <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                        <i class="bi bi-trash me-1"></i> Xóa đơn đặt vé này
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

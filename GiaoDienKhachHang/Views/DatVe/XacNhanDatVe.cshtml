@@ -1,0 +1,187 @@
+@{
+    ViewData["Title"] = "Xác nhận đặt vé";
+    var suatChieu = ViewBag.SuatChieu as GiaoDienKhachHang.Models.SuatChieu;
+    var ghes = ViewBag.SelectedGhes as List<GiaoDienKhachHang.Models.GheSuatChieu> ?? new();
+    var tongTien = (decimal)(ViewBag.TongTien ?? 0);
+    var gheIds = ViewBag.GheIds as string ?? "";
+    var currentUser = ViewBag.CurrentUser as GiaoDienKhachHang.Models.NguoiDung;
+}
+
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Breadcrumb / Progress steps -->
+            <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+                <a href="@Url.Action("ChonGhe", "DatVe", new { id = suatChieu?.MaSuatChieu })" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i> Quay lại chọn ghế
+                </a>
+                <div class="d-flex align-items-center gap-2 small text-muted">
+                    <span class="text-danger fw-bold"><i class="bi bi-check-circle-fill me-1"></i>1. Chọn rạp & suất</span>
+                    <span>&rsaquo;</span>
+                    <span class="text-danger fw-bold"><i class="bi bi-check-circle-fill me-1"></i>2. Chọn ghế</span>
+                    <span>&rsaquo;</span>
+                    <span class="text-white fw-bold"><i class="bi bi-3-circle-fill me-1 text-danger"></i>3. Xác nhận đặt vé</span>
+                    <span>&rsaquo;</span>
+                    <span>4. Thanh toán</span>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Cột thông tin phim & vé -->
+                <div class="col-lg-7">
+                    <div class="card bg-card border-secondary rounded-4 p-4 h-100">
+                        <h4 class="text-white fw-bold mb-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-ticket-perforated-fill text-danger"></i> THÔNG TIN VÉ XEM PHIM
+                        </h4>
+
+                        <!-- Card Phim -->
+                        <div class="d-flex gap-3 p-3 rounded-3 mb-4" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);">
+                            @if (!string.IsNullOrEmpty(suatChieu?.Phim?.Poster))
+                            {
+                                <img src="@suatChieu.Phim.Poster" alt="@suatChieu.Phim.TenPhim" class="rounded-3 shadow" style="width: 90px; height: 130px; object-fit: cover;" />
+                            }
+                            <div class="d-flex flex-column justify-content-center">
+                                <h5 class="text-white fw-bold mb-1">@suatChieu?.Phim?.TenPhim</h5>
+                                <div class="d-flex gap-2 mb-2">
+                                    <span class="badge bg-danger">@suatChieu?.Phim?.DoTuoi</span>
+                                    <span class="badge bg-secondary">@suatChieu?.Phim?.ThoiLuong phút</span>
+                                </div>
+                                <div class="small text-muted">
+                                    <i class="bi bi-geo-alt-fill text-danger me-1"></i>@suatChieu?.PhongChieu?.RapChieu?.TenRap
+                                </div>
+                                <div class="small text-muted">
+                                    <i class="bi bi-door-open-fill text-warning me-1"></i>@suatChieu?.PhongChieu?.TenPhong
+                                </div>
+                                <div class="small text-light mt-1">
+                                    <i class="bi bi-clock-fill text-info me-1"></i><strong class="text-warning">@suatChieu?.GioBatDau.ToString(@"hh\:mm")</strong> - Ngày @suatChieu?.NgayChieu.ToString("dd/MM/yyyy")
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Danh sách ghế đã chọn -->
+                        <h6 class="text-white fw-bold mb-2">Danh Sách Ghế Đã Chọn (@ghes.Count ghế):</h6>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+                                <thead class="border-secondary text-muted small">
+                                    <tr>
+                                        <th>Ghế</th>
+                                        <th>Loại ghế</th>
+                                        <th class="text-end">Đơn giá</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var g in ghes)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <span class="badge bg-danger fs-6 px-3 py-2">
+                                                    @g.GheNgoi?.HangGhe@g.GheNgoi?.SoGhe
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge @(g.GheNgoi?.LoaiGhe == "VIP" ? "bg-warning text-dark" : g.GheNgoi?.LoaiGhe == "Doi" ? "bg-info text-dark" : "bg-secondary")">
+                                                    Ghế @g.GheNgoi?.LoaiGhe
+                                                </span>
+                                            </td>
+                                            <td class="text-end fw-bold text-white">
+                                                @g.GiaVe.ToString("N0") đ
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot class="border-top border-secondary">
+                                    <tr>
+                                        <th colspan="2" class="text-white fs-5">Tổng tiền vé:</th>
+                                        <th class="text-end text-danger fs-4 fw-bold">@tongTien.ToString("N0") đ</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <div class="p-3 rounded-3 mt-auto" style="background: rgba(220, 53, 69, 0.08); border: 1px dashed rgba(220, 53, 69, 0.3);">
+                            <div class="small text-muted d-flex align-items-center gap-2">
+                                <i class="bi bi-info-circle-fill text-danger fs-5"></i>
+                                <span>Ghế sẽ được tạm giữ chỗ trong <strong>10 phút</strong>. Vui lòng kiểm tra kỹ thông tin trước khi nhấn xác nhận.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cột thông tin khách hàng & Nút đặt vé -->
+                <div class="col-lg-5">
+                    <div class="card bg-card border-secondary rounded-4 p-4 h-100">
+                        <h4 class="text-white fw-bold mb-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-person-lines-fill text-danger"></i> THÔNG TIN NGƯỜI ĐẶT
+                        </h4>
+
+                        @if (TempData["Error"] != null)
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+                            </div>
+                        }
+
+                        <form asp-action="TaoDonDatVe" asp-controller="DatVe" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="maSuatChieu" value="@suatChieu?.MaSuatChieu" />
+                            <input type="hidden" name="gheIds" value="@gheIds" />
+
+                            <div class="mb-3">
+                                <label class="form-label text-light small fw-bold">Họ và tên <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-person"></i></span>
+                                    <input type="text" name="hoTen" class="form-control bg-dark border-secondary text-white" 
+                                           value="@(currentUser?.HoTen ?? "")" required placeholder="Nguyễn Văn A" />
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label text-light small fw-bold">Email nhận vé điện tử <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-envelope"></i></span>
+                                    <input type="email" name="email" class="form-control bg-dark border-secondary text-white" 
+                                           value="@(currentUser?.Email ?? "")" required placeholder="email@example.com" />
+                                </div>
+                                <div class="form-text text-muted small">Mã vé và thông tin suất chiếu sẽ được gửi tới email này.</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label text-light small fw-bold">Số điện thoại</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-telephone"></i></span>
+                                    <input type="tel" name="soDienThoai" class="form-control bg-dark border-secondary text-white" 
+                                           value="@(currentUser?.SoDienThoai ?? "")" placeholder="0901234567" />
+                                </div>
+                            </div>
+
+                            <div class="card bg-dark border-secondary rounded-3 p-3 mb-4">
+                                <div class="d-flex justify-content-between text-muted small mb-1">
+                                    <span>Số lượng vé:</span>
+                                    <strong class="text-light">@ghes.Count vé</strong>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted small mb-1">
+                                    <span>Tạm tính:</span>
+                                    <strong class="text-light">@tongTien.ToString("N0") đ</strong>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted small mb-2">
+                                    <span>Phí tiện ích:</span>
+                                    <strong class="text-success">0 đ (Miễn phí)</strong>
+                                </div>
+                                <hr class="border-secondary my-2" />
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-white fw-bold">Tổng thanh toán:</span>
+                                    <span class="fs-4 fw-bold text-danger">@tongTien.ToString("N0") đ</span>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-cinema btn-lg w-100 py-3 fw-bold rounded-pill shadow-lg">
+                                <i class="bi bi-check2-circle me-2"></i>Xác nhận & Tạo đơn đặt vé
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

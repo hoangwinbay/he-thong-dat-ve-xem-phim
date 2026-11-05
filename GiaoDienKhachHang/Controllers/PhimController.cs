@@ -1,3 +1,4 @@
+﻿using GiaoDienKhachHang.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using GiaoDienKhachHang.Data;
@@ -63,7 +64,73 @@ namespace GiaoDienKhachHang.Controllers
                 .ToList();
 
             ViewBag.SuatChieus = suatChieus;
+
+            // Tải danh sách đánh giá phim (Dịch vụ Đánh giá phim)
+            var danhGias = await _context.DanhGiaPhims
+                .Include(d => d.NguoiDung)
+                .Where(d => d.MaPhim == id)
+                .OrderByDescending(d => d.NgayDanhGia)
+                .ToListAsync();
+
+            ViewBag.DanhGias = danhGias;
+            ViewBag.TongSoDanhGia = danhGias.Count;
+            ViewBag.DiemTrungBinh = danhGias.Count > 0 ? Math.Round(danhGias.Average(d => d.SoSao), 1) : 0;
+
             return View(phim);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GuiDanhGia(int maPhim, int soSao, string? binhLuan, string? email)
+        {
+            var maNguoiDung = HttpContext.Session.GetInt32("MaNguoiDung");
+            if (!maNguoiDung.HasValue)
+            {
+                if (!string.IsNullOrWhiteSpace(email))
+                {
+                    var user = await _context.NguoiDungs.FirstOrDefaultAsync(u => u.Email == email.Trim());
+                    if (user != null)
+                    {
+                        maNguoiDung = user.MaNguoiDung;
+                    }
+                }
+            }
+
+            if (!maNguoiDung.HasValue)
+            {
+                TempData["Error"] = "Vui lòng đăng nhập hoặc nhập đúng email tài khoản đã đăng ký để gửi đánh giá phim.";
+                return RedirectToAction(nameof(ChiTiet), new { id = maPhim });
+            }
+
+            if (soSao < 1 || soSao > 5)
+            {
+                TempData["Error"] = "Số sao đánh giá phải từ 1 đến 5 sao.";
+                return RedirectToAction(nameof(ChiTiet), new { id = maPhim });
+            }
+
+            var existing = await _context.DanhGiaPhims.FirstOrDefaultAsync(d => d.MaNguoiDung == maNguoiDung.Value && d.MaPhim == maPhim);
+            if (existing != null)
+            {
+                existing.SoSao = soSao;
+                existing.BinhLuan = binhLuan;
+                existing.NgayDanhGia = DateTime.Now;
+                TempData["Success"] = "Đã cập nhật đánh giá của bạn cho phim này!";
+            }
+            else
+            {
+                _context.DanhGiaPhims.Add(new DanhGiaPhim
+                {
+                    MaNguoiDung = maNguoiDung.Value,
+                    MaPhim = maPhim,
+                    SoSao = soSao,
+                    BinhLuan = binhLuan,
+                    NgayDanhGia = DateTime.Now
+                });
+                TempData["Success"] = "Cảm ơn bạn đã gửi đánh giá cho phim!";
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(ChiTiet), new { id = maPhim });
         }
     }
 }

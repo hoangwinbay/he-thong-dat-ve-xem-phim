@@ -1,0 +1,170 @@
+@model GiaoDienKhachHang.Models.DatVe
+@{
+    ViewData["Title"] = "Thanh toán đơn vé #" + Model.MaDatVe;
+    var suat = Model.SuatChieu;
+    var phim = suat?.Phim;
+    var phong = suat?.PhongChieu;
+    var rap = phong?.RapChieu;
+    var ghes = Model.ChiTietDatVes.Select(ct => ct.GheSuatChieu?.GheNgoi).Where(g => g != null).ToList();
+}
+
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Progress steps -->
+            <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+                <a href="@Url.Action("Index", "LichSuDatVe")" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i> Để thanh toán sau
+                </a>
+                <div class="d-flex align-items-center gap-2 small text-muted">
+                    <span class="text-danger fw-bold"><i class="bi bi-check-circle-fill me-1"></i>1. Suất chiếu</span>
+                    <span>&rsaquo;</span>
+                    <span class="text-danger fw-bold"><i class="bi bi-check-circle-fill me-1"></i>2. Chọn ghế</span>
+                    <span>&rsaquo;</span>
+                    <span class="text-danger fw-bold"><i class="bi bi-check-circle-fill me-1"></i>3. Xác nhận vé</span>
+                    <span>&rsaquo;</span>
+                    <span class="text-white fw-bold"><i class="bi bi-4-circle-fill me-1 text-danger"></i>4. Thanh toán</span>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Tóm tắt đơn vé -->
+                <div class="col-lg-5">
+                    <div class="card bg-card border-secondary rounded-4 p-4 h-100 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom border-secondary">
+                            <h5 class="text-white fw-bold mb-0">Đơn Đặt Vé <span class="text-danger">#@Model.MaDatVe</span></h5>
+                            <span class="badge bg-warning text-dark px-3 py-1 rounded-pill">Chờ thanh toán</span>
+                        </div>
+
+                        <!-- Card Phim -->
+                        <div class="d-flex gap-3 mb-3">
+                            @if (!string.IsNullOrEmpty(phim?.Poster))
+                            {
+                                <img src="@phim.Poster" alt="@phim.TenPhim" class="rounded-3 shadow" style="width: 80px; height: 115px; object-fit: cover;" />
+                            }
+                            <div>
+                                <h6 class="text-white fw-bold mb-1">@phim?.TenPhim</h6>
+                                <div class="badge bg-danger mb-2">@phim?.DoTuoi</div>
+                                <div class="small text-muted mb-1"><i class="bi bi-geo-alt-fill text-danger me-1"></i>@rap?.TenRap</div>
+                                <div class="small text-muted"><i class="bi bi-door-open-fill text-warning me-1"></i>@phong?.TenPhong</div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 rounded-3 mb-3" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);">
+                            <div class="small text-muted mb-1">Suất chiếu:</div>
+                            <div class="text-warning fw-bold">
+                                <i class="bi bi-clock-fill me-1"></i>@suat?.GioBatDau.ToString(@"hh\:mm") • Ngày @suat?.NgayChieu.ToString("dd/MM/yyyy")
+                            </div>
+                            <hr class="border-secondary my-2" />
+                            <div class="small text-muted mb-1">Ghế ngồi (@ghes.Count ghế):</div>
+                            <div class="d-flex flex-wrap gap-1">
+                                @foreach (var g in ghes)
+                                {
+                                    <span class="badge bg-danger px-2 py-1">@g?.HangGhe@g?.SoGhe</span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="small text-muted mb-3">
+                            Người đặt: <strong class="text-light">@(Model.NguoiDung?.HoTen ?? "Khách hàng")</strong><br />
+                            Email nhận vé: <span class="text-light">@(Model.NguoiDung?.Email ?? "")</span>
+                        </div>
+
+                        <div class="border-top border-secondary pt-3 mt-auto">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Tổng số tiền:</span>
+                                <span class="fs-4 fw-bold text-danger">@Model.TongTien.ToString("N0") đ</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cổng chọn phương thức thanh toán -->
+                <div class="col-lg-7">
+                    <div class="card bg-card border-secondary rounded-4 p-4 h-100 shadow-sm">
+                        <h4 class="text-white fw-bold mb-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-shield-lock-fill text-danger"></i> CHỌN PHƯƠNG THỨC THANH TOÁN
+                        </h4>
+                        <p class="text-muted small mb-4">Giao dịch được bảo mật và xử lý tức thời bởi Cổng Dịch vụ Thanh toán (DichVuThanhToan).</p>
+
+                        <form asp-action="XuLyThanhToan" asp-controller="ThanhToan" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="maDatVe" value="@Model.MaDatVe" />
+
+                            <div class="d-flex flex-column gap-3 mb-4">
+                                <!-- Lựa chọn VNPAY -->
+                                <label class="payment-method-card p-3 rounded-3 d-flex align-items-center justify-content-between cursor-pointer border border-secondary" style="background: rgba(255,255,255,0.02); cursor: pointer;">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <input class="form-check-input mt-0" type="radio" name="phuongThuc" value="VNPAY" checked id="pmVnPay" />
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="bi bi-qr-code text-info fs-3"></i>
+                                            <div>
+                                                <div class="text-white fw-bold">Cổng VNPAY / VNPAY-QR</div>
+                                                <div class="text-muted small">Quét mã QR từ ứng dụng ngân hàng hoặc thẻ ATM nội địa</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-danger rounded-pill">Khuyên dùng</span>
+                                </label>
+
+                                <!-- Lựa chọn MOMO -->
+                                <label class="payment-method-card p-3 rounded-3 d-flex align-items-center justify-content-between cursor-pointer border border-secondary" style="background: rgba(255,255,255,0.02); cursor: pointer;">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <input class="form-check-input mt-0" type="radio" name="phuongThuc" value="MOMO" id="pmMoMo" />
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="bi bi-wallet2 text-danger fs-3"></i>
+                                            <div>
+                                                <div class="text-white fw-bold">Ví Điện Tử MoMo</div>
+                                                <div class="text-muted small">Thanh toán tức thì bằng ứng dụng ví MoMo</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-secondary rounded-pill">Phổ biến</span>
+                                </label>
+
+                                <!-- Lựa chọn Thẻ Quốc Tế -->
+                                <label class="payment-method-card p-3 rounded-3 d-flex align-items-center justify-content-between cursor-pointer border border-secondary" style="background: rgba(255,255,255,0.02); cursor: pointer;">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <input class="form-check-input mt-0" type="radio" name="phuongThuc" value="TheQuocTe" id="pmCard" />
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="bi bi-credit-card-2-front-fill text-warning fs-3"></i>
+                                            <div>
+                                                <div class="text-white fw-bold">Thẻ Quốc Tế (Visa / Mastercard / JCB)</div>
+                                                <div class="text-muted small">Hỗ trợ tất cả ngân hàng trong nước & quốc tế</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <!-- Lựa chọn Tiền mặt tại quầy -->
+                                <label class="payment-method-card p-3 rounded-3 d-flex align-items-center justify-content-between cursor-pointer border border-secondary" style="background: rgba(255,255,255,0.02); cursor: pointer;">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <input class="form-check-input mt-0" type="radio" name="phuongThuc" value="TienMatTaiRap" id="pmCash" />
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="bi bi-cash-stack text-success fs-3"></i>
+                                            <div>
+                                                <div class="text-white fw-bold">Thanh Toán Tiền Mặt Tại Quầy Vé Rạp</div>
+                                                <div class="text-muted small">Nhận vé tại quầy trước giờ chiếu tối thiểu 15 phút</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-3 p-3 rounded-3 mb-4" style="background: rgba(220,53,69,0.06); border: 1px solid rgba(220,53,69,0.2);">
+                                <i class="bi bi-shield-check text-success fs-3"></i>
+                                <div class="small text-muted">
+                                    Thanh toán trực tuyến được mã hóa bảo mật 256-bit SSL. Hệ thống tự động kích hoạt vé ngay sau khi xác nhận.
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-cinema btn-lg w-100 py-3 fw-bold rounded-pill shadow-lg">
+                                <i class="bi bi-lock-fill me-2"></i>Thanh toán ngay @Model.TongTien.ToString("N0") đ
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

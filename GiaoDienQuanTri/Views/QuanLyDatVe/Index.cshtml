@@ -1,0 +1,148 @@
+@model IEnumerable<GiaoDienQuanTri.Models.DatVe>
+@{
+    ViewData["Title"] = "Quản lý đặt vé";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold mb-0 text-dark">
+        <i class="bi bi-ticket-perforated-fill text-danger me-2"></i> Quản Lý Đơn Đặt Vé (Dịch Vụ 6)
+    </h3>
+    <span class="badge bg-danger fs-6 px-3 py-2 rounded-pill">
+        Tổng số: @Model.Count() đơn
+    </span>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Bộ lọc đơn đặt vé -->
+<div class="card mb-4 border-0 shadow-sm">
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-6">
+                <input type="text" name="search" value="@ViewBag.Search" class="form-control" placeholder="Tìm theo mã đơn, họ tên, email, tên phim..." />
+            </div>
+            <div class="col-md-4">
+                <select name="trangThai" class="form-select">
+                    <option value="">-- Tất cả trạng thái --</option>
+                    <option value="ChoThanhToan" selected="@(ViewBag.TrangThai == "ChoThanhToan")">Chờ thanh toán (ChoThanhToan)</option>
+                    <option value="DaThanhToan" selected="@(ViewBag.TrangThai == "DaThanhToan")">Đã thanh toán (DaThanhToan)</option>
+                    <option value="DaHuy" selected="@(ViewBag.TrangThai == "DaHuy")">Đã hủy (DaHuy)</option>
+                    <option value="HetHan" selected="@(ViewBag.TrangThai == "HetHan")">Hết hạn (HetHan)</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-dark w-100">
+                    <i class="bi bi-search me-1"></i> Lọc đơn
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 90px;">Mã Đơn</th>
+                        <th>Khách Hàng</th>
+                        <th>Phim & Rạp</th>
+                        <th>Suất Chiếu</th>
+                        <th>Ghế Đặt</th>
+                        <th>Tổng Tiền</th>
+                        <th>Trạng Thái</th>
+                        <th class="text-center" style="width: 140px;">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">
+                                Không tìm thấy đơn đặt vé nào phù hợp điều kiện lọc.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var dv in Model)
+                    {
+                        var suat = dv.SuatChieu;
+                        var ghes = dv.ChiTietDatVes.Select(ct => ct.GheSuatChieu?.GheNgoi).Where(g => g != null).ToList();
+
+                        <tr>
+                            <td>
+                                <strong class="text-danger">#@dv.MaDatVe</strong>
+                                <div class="small text-muted">@dv.NgayDat.ToString("dd/MM/yy HH:mm")</div>
+                            </td>
+                            <td>
+                                <strong>@(dv.NguoiDung?.HoTen ?? "Khách lẻ")</strong>
+                                <div class="small text-muted">@(dv.NguoiDung?.Email ?? "N/A")</div>
+                                @if (!string.IsNullOrEmpty(dv.NguoiDung?.SoDienThoai))
+                                {
+                                    <div class="small text-muted"><i class="bi bi-telephone me-1"></i>@dv.NguoiDung.SoDienThoai</div>
+                                }
+                            </td>
+                            <td>
+                                <strong class="text-dark">@(suat?.Phim?.TenPhim ?? "N/A")</strong>
+                                <div class="small text-muted">
+                                    @(suat?.PhongChieu?.RapChieu?.TenRap ?? "") • @(suat?.PhongChieu?.TenPhong ?? "")
+                                </div>
+                            </td>
+                            <td>
+                                <div class="badge bg-dark">@suat?.GioBatDau.ToString(@"hh\:mm")</div>
+                                <div class="small text-muted">@suat?.NgayChieu.ToString("dd/MM/yyyy")</div>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-wrap gap-1" style="max-width: 180px;">
+                                    @foreach (var g in ghes)
+                                    {
+                                        <span class="badge bg-secondary">@g?.HangGhe@g?.SoGhe</span>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <strong class="text-danger">@dv.TongTien.ToString("N0") đ</strong>
+                            </td>
+                            <td>
+                                @if (dv.TrangThai == "ChoThanhToan")
+                                {
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-hourglass me-1"></i>Chờ TT</span>
+                                }
+                                else if (dv.TrangThai == "DaThanhToan")
+                                {
+                                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Đã TT</span>
+                                }
+                                else if (dv.TrangThai == "DaHuy")
+                                {
+                                    <span class="badge bg-secondary"><i class="bi bi-x-circle me-1"></i>Đã hủy</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">@dv.TrangThai</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <a asp-action="ChiTiet" asp-route-id="@dv.MaDatVe" class="btn btn-sm btn-outline-primary" title="Xem chi tiết đơn">
+                                    <i class="bi bi-eye"></i> Chi tiết
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

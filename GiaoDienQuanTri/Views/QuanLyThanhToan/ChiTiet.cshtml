@@ -1,0 +1,179 @@
+@model GiaoDienQuanTri.Models.ThanhToan
+@{
+    ViewData["Title"] = "Chi tiết giao dịch #" + Model.MaThanhToan;
+    var dv = Model.DatVe;
+    var suat = dv?.SuatChieu;
+    var phim = suat?.Phim;
+    var phong = suat?.PhongChieu;
+    var rap = phong?.RapChieu;
+    var ghes = dv?.ChiTietDatVes.Select(ct => ct.GheSuatChieu?.GheNgoi).Where(g => g != null).ToList() ?? new();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm mb-2">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+        </a>
+        <h3 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-receipt-cutoff text-danger me-2"></i> Chi Tiết Thanh Toán <span class="text-danger">#@Model.MaThanhToan</span>
+        </h3>
+    </div>
+    <div>
+        @if (Model.TrangThai == "ThanhCong")
+        {
+            <span class="badge bg-success fs-6 px-3 py-2 rounded-pill">
+                <i class="bi bi-check-circle-fill me-1"></i> Giao dịch thành công
+            </span>
+        }
+        else if (Model.TrangThai == "HoanTien")
+        {
+            <span class="badge bg-danger fs-6 px-3 py-2 rounded-pill">
+                <i class="bi bi-arrow-counterclockwise me-1"></i> Đã hoàn tiền
+            </span>
+        }
+        else
+        {
+            <span class="badge bg-warning text-dark fs-6 px-3 py-2 rounded-pill">
+                @Model.TrangThai
+            </span>
+        }
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <!-- Cột trái: Biên lai thanh toán -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-cash-stack text-success me-2"></i> Thông Tin Giao Dịch</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Mã giao dịch đối soát:</small>
+                        <strong class="font-monospace text-dark fs-6">@(Model.MaGiaoDich ?? "N/A")</strong>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Phương thức thanh toán:</small>
+                        <span class="badge bg-dark fs-6">@Model.PhuongThuc</span>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Thời điểm giao dịch:</small>
+                        <span>@Model.NgayThanhToan.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Số tiền thanh toán:</small>
+                        <span class="fs-4 fw-bold text-success">@Model.SoTien.ToString("N0") đ</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thông tin đơn vé tương ứng -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-ticket-detailed-fill text-danger me-2"></i> Đơn Đặt Vé Tương Ứng</h5>
+                <a asp-controller="QuanLyDatVe" asp-action="ChiTiet" asp-route-id="@Model.MaDatVe" class="btn btn-sm btn-outline-danger">
+                    Xem đơn vé #@Model.MaDatVe
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-3 text-center">
+                        <img src="/@phim?.Poster" class="rounded shadow-sm img-fluid" style="max-height: 150px; object-fit: cover;" onerror="this.src='https://placehold.co/100x150?text=Phim';" />
+                    </div>
+                    <div class="col-md-9">
+                        <h5 class="fw-bold text-dark mb-1">@phim?.TenPhim</h5>
+                        <div class="text-muted small mb-2">@rap?.TenRap • @phong?.TenPhong</div>
+                        <div class="text-danger fw-bold small mb-2">
+                            <i class="bi bi-clock me-1"></i>@suat?.GioBatDau.ToString(@"hh\:mm") - Ngày @suat?.NgayChieu.ToString("dd/MM/yyyy")
+                        </div>
+                        <div class="small">
+                            <strong>Ghế đặt:</strong>
+                            @foreach (var g in ghes)
+                            {
+                                <span class="badge bg-secondary me-1">@g?.HangGhe@g?.SoGhe</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cột phải: Người thanh toán & Chức năng hoàn tiền -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-person-circle text-danger me-2"></i> Khách Hàng Thanh Toán</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <small class="text-muted d-block">Họ tên:</small>
+                        <strong>@(dv?.NguoiDung?.HoTen ?? "Khách lẻ")</strong>
+                    </li>
+                    <li class="mb-2">
+                        <small class="text-muted d-block">Email:</small>
+                        <span>@(dv?.NguoiDung?.Email ?? "N/A")</span>
+                    </li>
+                    <li>
+                        <small class="text-muted d-block">Số điện thoại:</small>
+                        <span>@(dv?.NguoiDung?.SoDienThoai ?? "Chưa cung cấp")</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-gear-fill text-danger me-2"></i> Thao Tác Giao Dịch</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="CapNhatTrangThai" method="post" class="mb-3">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.MaThanhToan" />
+
+                    <label class="form-label small text-muted">Trạng thái thanh toán:</label>
+                    <select name="trangThai" class="form-select mb-3">
+                        <option value="ThanhCong" selected="@(Model.TrangThai == "ThanhCong")">Thành công (ThanhCong)</option>
+                        <option value="ChoXuLy" selected="@(Model.TrangThai == "ChoXuLy")">Chờ xử lý (ChoXuLy)</option>
+                        <option value="HoanTien" selected="@(Model.TrangThai == "HoanTien")">Hoàn tiền (HoanTien)</option>
+                        <option value="ThatBai" selected="@(Model.TrangThai == "ThatBai")">Thất bại (ThatBai)</option>
+                    </select>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-save me-1"></i> Lưu trạng thái
+                    </button>
+                </form>
+
+                @if (Model.TrangThai == "ThanhCong")
+                {
+                    <hr />
+                    <form asp-action="HoanTien" method="post" onsubmit="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn hoàn tiền cho giao dịch này? Đơn đặt vé sẽ bị hủy và ghế sẽ được giải phóng.');">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.MaThanhToan" />
+                        <button type="submit" class="btn btn-outline-danger w-100">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Hoàn tiền & Hủy vé
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>
